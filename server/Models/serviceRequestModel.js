@@ -15,7 +15,7 @@ const serviceRequestSchema = new mongoose.Schema(
       default: null, // Will be null until a provider accepts
     },
 
-     service_type: {
+    service_type: {
       type: String,
       required: true,
       trim: true,
@@ -72,7 +72,7 @@ const serviceRequestSchema = new mongoose.Schema(
       default: null,
     },
 
-     notes: {
+    notes: {
       type: String,
       default: null,
       trim: true,
@@ -83,9 +83,14 @@ const serviceRequestSchema = new mongoose.Schema(
       default: null,
       trim: true,
       // optional: define allowed statuses for live tracking
-      // enum: ["en-route", "arrived", "loading", "moving", "unloading", "completed"]
+      enum: ["en-route", "arrived", "loading", "moving", "unloading", "completed"]
     },
 
+    cancelled_by: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      default: null,
+    },
     cancellation_reason: {
       type: String,
       default: null,

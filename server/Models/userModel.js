@@ -68,7 +68,7 @@ const userSchema = new mongoose.Schema({
     },
 
     // ...masterSchema.obj // inherit master schema fields
-})
+},{ timestamps: false })
 userSchema.add(masterSchema);// Merging masterSchema fields into userSchema
 
 module.exports = mongoose.model("User", userSchema)

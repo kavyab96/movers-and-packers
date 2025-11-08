@@ -1,12 +1,19 @@
 const userRouter = require("express").Router();
-// const userController = require("../../Controllers/v1/userController");
 
-userRouter.post("/register", (req, res) => {    
-    res.send("User registration endpoint");
-});
+// User Profile Routes (Client & Provider)
 
-userRouter.post("/login", (req, res) => {    
-    res.send("User login endpoint");
+//Auth User	Get logged-in user profile
+userRouter.get("/me", (req, res) => {    
+    res.send("Auth User	Get logged-in user profile");
 }); 
+
+//Auth User	Update own profile details
+userRouter.put("/me/:id", (req, res) => {    
+    res.send("Auth User	Get logged-in user profile");
+}); 
+
+//
+
+
 
 module.exports = userRouter;

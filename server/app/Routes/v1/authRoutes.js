@@ -1,18 +1,20 @@
 const authRouter = require("express").Router();
 // Routes for User Module (Client + Provider + Admin)//
-
+const {userRegister,login }= require('../../Controllers/authController');
+const {registerValidationRules,loginValidationRules}= require('../../Middleware/validators/authValidator');
+const validate = require('../../Middleware/validators/validate');
 
 
 // Register as user or provider
-authRouter.post("/register", (req, res) => {    
+authRouter.post("/register",registerValidationRules, validate, userRegister);
+// Register as admin    
+authRouter.post("/admin/register", (req, res) => {    
     res.send("User registration endpoint");
 });
 
 
 //Login with email & password
-authRouter.post("/login", (req, res) => {    
-    res.send("User login endpoint");
-}); 
+authRouter.post("/login",loginValidationRules,validate, login); 
 
 //Logout user
 authRouter.post("/logout", (req, res) => {    

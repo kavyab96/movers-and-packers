@@ -20,13 +20,17 @@ const userSchema = new mongoose.Schema({
     },
     phone: {
         type: String,
-        required: true,
+        required: function () {
+            return this.role !== "admin";
+        },
         unique: true,
         trim: true
     },
     address: {
         type: String,
-        required: true,
+        required:function () {
+            return this.role !== "admin";
+        },
         trim: true
     },
     registration_date: {

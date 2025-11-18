@@ -1,19 +1,26 @@
+const { adminRegister, getAllUsers ,updateAdminProfile } = require("../../Controllers/adminController");
+const authMiddleware = require("../../Middleware/authMiddleware");
+const { adminRegisterValidationRules } = require("../../Middleware/validators/authValidator");
+const validate = require('../../Middleware/validators/validate');
+
 /* Admin User Management Routes*/
 const adminRouter = require("express").Router();
 //Updated Admin User Management Routes (with Edit Admin Profile)//
 
+
+
+// Register as admin    
+adminRouter.post("/register",adminRegisterValidationRules, validate, adminRegister);
+
+
 //---------------------admin -user & provider ----------------------------------//
 
 //Admin	Get list of all users
-adminRouter.get("/getUsers", (req, res) => {    
-    res.send("Admin	Get list of all userst");
-});
+adminRouter.get("/getAllUsers",authMiddleware,getAllUsers);
 
 //admin update user  $ provider profile
 
-adminRouter.put("/update/:id", (req, res) => {    
-    res.send("admin update user  $ provider profile");
-});
+adminRouter.put("/update/:id",authMiddleware, updateAdminProfile);
 
 
 // Activate/Deactivate (is_active toggle) /soft-delete user/provider

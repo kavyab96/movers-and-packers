@@ -1,9 +1,13 @@
 const userDb = require("../Models/userModel");
 const { hashPassword, compairePassword } = require("../Utilities/passwordUtilities");
 const { createToken } = require("../Utilities/generateToken");
+const uploadToCloudinary = require("../Utilities/imageUpload");
 
 exports.userRegister = async (req, res, next) => {
    try {
+
+      console.log(req.file, "image uploaded by multer");
+
 
       const { name, email, password, phone, address, role, service_areas } = req.body;
       if (password !== req.body.confirm_password) {
@@ -14,8 +18,13 @@ exports.userRegister = async (req, res, next) => {
          return res.status(400).json({ message: "Email or Phone number already in use" });
       }
 
-      const hasedPassword = await hashPassword(password);
+      let cloudinaryRes = null;
+      if (req.file) {
+         cloudinaryRes = await uploadToCloudinary(req.file.path,'profile-pics');
+         // console.log(cloudinaryRes, "image uploaded to cloudinary");
+      }
 
+      const hasedPassword = await hashPassword(password);
       const newUser = new userDb({
          name,
          email,
@@ -24,6 +33,7 @@ exports.userRegister = async (req, res, next) => {
          address,
          role,
          service_areas: role === "provider" ? service_areas : [],// Only set service_areas for providers   
+         profile_pic: cloudinaryRes
       })
       const saved = await newUser.save();
 
@@ -43,6 +53,14 @@ exports.userRegister = async (req, res, next) => {
       }
 
    } catch (error) {
+
+      // console.log("REGISTRATION ERROR:", JSON.stringify(error, null, 2));
+      // return res.status(500).json({
+      //    success: false,
+      //    message: error.message || "Something went wrong",
+      //    error
+      // });
+
       next(error)
    }
 }
@@ -72,6 +90,20 @@ exports.login = async (req, res, next) => {
       return res.status(200).json({ message: "User logged in successfully", userExists });
 
    } catch (error) {
+
       next(error)
    }
 }
+
+/* logout function*/
+exports.logout = async (req, res, next) => {
+   try {
+      
+      res.clearXCookie("token");
+      res.status(200).json({ message: "User logged out successfully" });
+   } catch (error) {
+      next(error)
+   }
+
+}
+

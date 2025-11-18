@@ -15,6 +15,11 @@ app.use(cookeParser())
 // database connection
 
 connectDB()
+// mongoose.connect(process.env.Mongo_URI).then(()=>{
+//     console.log("connected to mongoDB");
+// }).catch((err)=>{
+//     console.log("mongoDB connection error:",err);
+// })
 
 app.use("/api",apiRouter)
 

@@ -4,13 +4,22 @@ const cors = require("cors")
 const apiRouter = require("./app/Routes")
 const { connectDB } = require("./config/db")
 require("dotenv").config()
+const cookeParser = require("cookie-parser")
 
 const app =express()
 
 app.use(cors())
 app.use(express.json())//middleware to parse JSON bodies 
+app.use(cookeParser())
+
+// database connection
 
 connectDB()
+// mongoose.connect(process.env.Mongo_URI).then(()=>{
+//     console.log("connected to mongoDB");
+// }).catch((err)=>{
+//     console.log("mongoDB connection error:",err);
+// })
 
 app.use("/api",apiRouter)
 

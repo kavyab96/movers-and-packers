@@ -20,7 +20,7 @@ exports.userRegister = async (req, res, next) => {
 
       let cloudinaryRes = null;
       if (req.file) {
-         cloudinaryRes = await uploadToCloudinary(req.file.path,'profile-pics');
+         cloudinaryRes = await uploadToCloudinary(req.file.path, 'profile-pics');
          // console.log(cloudinaryRes, "image uploaded to cloudinary");
       }
 
@@ -98,8 +98,8 @@ exports.login = async (req, res, next) => {
 /* logout function*/
 exports.logout = async (req, res, next) => {
    try {
-      
-      res.clearXCookie("token");
+
+      res.clearCookie("token");
       res.status(200).json({ message: "User logged out successfully" });
    } catch (error) {
       next(error)
@@ -107,3 +107,33 @@ exports.logout = async (req, res, next) => {
 
 }
 
+
+/* reset password function*/
+exports.resetPassword = async (req, res, next) => {
+   try {
+     
+      const { email, new_password, confirm_password } = req.body;
+      if (!email || !new_password || !confirm_password) {
+         return res.status(400).json({ message: "All fields are required" });
+      }
+      if (new_password !== confirm_password) {
+         return res.status(400).json({ message: "Passwords do not match" });
+      }
+      // Check if user exists
+      const user = await userDb.findOne({ email });
+      if (!user) {
+         return res.status(404).json({ message: "User not found" });
+      }
+
+      // Hash new password
+      const hashed = await hashPassword(new_password);
+      user.password = hashed;
+      await user.save();
+
+      return res.status(200).json({
+         message: "Password reset successfully"
+      });
+   } catch (error) {
+      next(error)
+   }
+}

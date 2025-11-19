@@ -1,39 +1,31 @@
 // ONLY for client-related actions
+const { addReview } = require("../../Controllers/reviewController");
+const { createBooking,getBookings, bookingDetails, cancelBooking } = require("../../Controllers/serviceRequestController");
+const authMiddleware = require("../../Middleware/authMiddleware");
+const roleMiddleware = require("../../Middleware/roleMiddleware");
+const { reviewValidator } = require("../../Middleware/validators/reviewValidator");
+const { createBookingValidator } = require("../../Middleware/validators/serviceRequestValidator");
+const validate = require("../../Middleware/validators/validate");
+const { add } = require("../../Models/masterModel");
 const clientRouter = require("express").Router();
 
 
-
 //Create a booking request
-clientRouter.post("/create-booking", (req, res) => {    
-    res.send("client create booking request endpoint");
-});
+clientRouter.post("/create-booking",authMiddleware,roleMiddleware(['user']),createBookingValidator,validate, createBooking );
 
-//Get own booking requests
-clientRouter.get("/bookings", (req, res) => {    
-    res.send("client get own booking requests endpoint");
-});
+//Get list of  own booking requests
+clientRouter.get("/bookings", authMiddleware,roleMiddleware(['user']),getBookings );
 
 //View booking details
-clientRouter.get("/booking/:id", (req, res) => {    
-    res.send("client view booking details endpoint");
-});
+clientRouter.get("/booking-detail/:id",authMiddleware,roleMiddleware(['user']),bookingDetails );
+
+
 //Cancel a booking
-clientRouter.put("/cancel-booking/:id", (req, res) => {    
-    res.send("client cancel a booking endpoint");
-});
+clientRouter.put("/cancel-booking/:id", authMiddleware,roleMiddleware(['user']), cancelBooking);
 
 
-//search for providers based on service type and location and date
-clientRouter.get("/get-providers", (req, res) => {    
-    res.send("client search for providers endpoint");
-});
-
-
-//Add review after completion
-
-clientRouter.post("/add-review/:providerId", (req, res) => {    
-    res.send("client add review after completion endpoint");
-});
+//client adds review, after completion
+clientRouter.post("/add-review/:providerId", authMiddleware,roleMiddleware(['user']),reviewValidator,validate,addReview);
 
 
 module.exports = clientRouter;

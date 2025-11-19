@@ -1,6 +1,12 @@
 const providerRouter = require("express").Router();
+const { getProviders } = require("../../Controllers/providerController");
+const authMiddleware = require("../../Middleware/authMiddleware");
 
 //Provider-Specific Routes//
+
+
+//search for providers based on service type and location and date
+providerRouter.get("/get-providers",  authMiddleware,getProviders);
 
 
 

@@ -2,6 +2,8 @@
 import User from "../Models/userModel.js";
 import ServiceRequest from "../Models/serviceRequestModel.js";
 import mongoose from "mongoose";
+import KycDocumentDb from "../Models/kycDocumentModel.js";
+import uploadToCloudinary from "../Utilities/imageUpload.js";
 
 
 
@@ -22,7 +24,7 @@ export const getProviders = async (req, res, next) => {
         const locationId = new mongoose.Types.ObjectId(location);
 
 
-       
+
         // Convert date into day range
         const reqDate = new Date(date);
         const startOfDay = new Date(reqDate.setHours(0, 0, 0, 0));
@@ -75,5 +77,206 @@ export const getProviders = async (req, res, next) => {
     }
 }
 
+
+/* Get assigned jobs for provider */
+export const getAssignedJobs = async (req, res, next) => {
+    try {
+        const providerId = req.user._id;
+
+        // Fetch all jobs assigned to this provider
+        const jobs = await ServiceRequest.find({
+            provider_id: providerId
+        })
+            .sort({ requested_date_time: -1 })
+            .populate("client_id", "name email phone")
+            .populate("provider_id", "name email phone");
+
+        if (!jobs || jobs.length === 0) {
+            return res.status(200).json({
+                message: "No jobs found for this provider.",
+                data: []
+            });
+        }
+
+        return res.status(200).json({
+            message: "Assigned jobs fetched successfully.",
+            total: jobs.length,
+            data: grouped
+        });
+
+    } catch (error) {
+        next(error);
+    }
+}
+
+
+/* update job status by provider */
+export const updateJobStatus = async (req, res, next) => {
+    try {
+
+        const providerId = req.user._id;
+        const bookingId = req.params.id;
+        const { status, tracking_status } = req.body;
+
+        // VALID STATUSES
+        const allowedStatuses = ["accepted", "rejected", "in-progress", "completed"];
+        const allowedTracking = ["en-route", "arrived", "loading", "moving", "unloading", "completed"];
+
+        // Validate status
+        if (!status && !tracking_status) {
+            return res.status(400).json({
+                message: "Either status or tracking_status is required."
+            });
+        }
+
+        if (status && !allowedStatuses.includes(status)) {
+            return res.status(400).json({
+                message: `Invalid status. Allowed: ${allowedStatuses.join(", ")}`
+            });
+        }
+
+        if (tracking_status && !allowedTracking.includes(tracking_status)) {
+            return res.status(400).json({
+                message: `Invalid tracking_status. Allowed: ${allowedTracking.join(", ")}`
+            });
+        }
+
+        // Fetch booking
+        const booking = await ServiceRequest.findOne({
+            _id: bookingId,
+            provider_id: providerId
+        });
+
+        if (!booking) {
+            return res.status(404).json({
+                message: "Booking not found or does not belong to you."
+            });
+        }
+
+        // Prevent updates on cancelled / completed bookings
+        if (["cancelled", "completed"].includes(booking.status)) {
+            return res.status(400).json({
+                message: `Cannot update because booking is already ${booking.status}.`
+            });
+        }
+
+
+        // -----------------------------------
+        // APPLY STATUS LOGIC
+        // -----------------------------------
+        if (status) {
+            booking.status = status;
+            // If accepted, provider becomes NOT available
+            // When provider actually starts working
+            if (["accepted", "in-progress"].includes(status)) {
+                await User.findByIdAndUpdate(providerId, {
+                    availability_status: "on-duty"
+                });
+            }
+
+            // If job rejected → provider is still "active"
+            if (["rejected", "completed"].includes(status)) {
+                await User.findByIdAndUpdate(providerId, {
+                    availability_status: "active"
+                });
+            }
+
+
+            // -------------------------
+            // APPLY TRACKING STATUS
+            // -------------------------
+
+            if (tracking_status) {
+                booking.tracking_status = tracking_status;
+            }
+            booking.updated_by = providerId;
+            await booking.save();
+            return res.status(200).json({
+                message: "Job status updated successfully.",
+                data: booking
+            });
+
+        }
+
+    } catch (error) {
+        next(error);
+    }
+}
+
+/* View uploaded KYC documents by provider */
+export const getKycDocuments = async (req, res, next) => {
+    try {
+
+        const providerId = req.user._id;
+
+        // Fetch provider
+        const provider = await KycDocument.findById(providerId).select("kyc_documents");
+        if (!provider) {
+            return res.status(404).json({
+                message: "Provider not found."
+            });
+        }
+        return res.status(200).json({
+            message: "KYC documents fetched successfully.",
+            data: provider.kyc_documents
+        });
+    } catch (error) {
+        next(error);
+    }
+}
+
+/* Upload or update KYC documents by provider */
+export const uploadKycDocuments = async (req, res, next) => {
+    try {
+        const providerId = req.user._id;
+        const { document_type } = req.body;
+
+        //validation
+        if (!document_type) {
+            return res.status(400).json({
+                message: "document_type is required."
+            });
+        }
+         //  File check
+        if (!req.file) {
+            return res.status(400).json({
+                message: "KYC document file is required."
+            });
+        }
+
+        //verify provider exists
+        const provider = await User.findById(providerId);
+        if (!provider) {
+            return res.status(404).json({
+                message: "Provider not found."
+            });
+        }        
+        
+        // Upload document to cloudinary
+        let cloudinaryRes = null;
+        if (req.file) {
+            cloudinaryRes = await uploadToCloudinary(req.file.path, 'kyc_doc');
+        }
+
+        const newUser = new KycDocumentDb({
+            user_id: providerId,
+            document_type,
+            file_url: cloudinaryRes.secure_url,
+            status: "pending",
+            updated_by: providerId
+        })
+        const saved = await newUser.save();
+       if (saved) {
+         return res.status(201).json({
+            message: "Doccument uploaded successfully",
+            data: saved
+         });
+      }
+
+
+    } catch (error) {
+        next(error);
+    }
+}
 
 

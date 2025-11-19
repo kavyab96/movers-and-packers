@@ -12,15 +12,17 @@ const serviceRequestSchema = new mongoose.Schema(
     provider_id: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
-      default: null, // Will be null until a provider accepts
+      required: true
     },
 
     service_type: {
       type: String,
       required: true,
       trim: true,
-      // Optionally define allowed values if fixed types:
+      enum: ["moving", "packing", "both"],
+      default: "moving",
       // enum: ["moving", "packing", "loading", "unloading", "transport"]
+
     },
 
     requested_date_time: {
@@ -42,13 +44,16 @@ const serviceRequestSchema = new mongoose.Schema(
 
     dropoff_location: {
       type: String,
-      default: null,
+      required: function () {
+        return this.service_type !== "packing";// moving / both require dropoff
+      },
       trim: true,
     },
 
     area_in_square_feet: {
       type: Number,
       default: null,
+      required: true,
     },
 
     estimated_cost: {

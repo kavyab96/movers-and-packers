@@ -2,8 +2,10 @@ const { verify } = require("jsonwebtoken");
 const { adminRegister, getAllUsers ,updateAdminProfile, userDelete, verifyProvider ,adminProfile } = require("../../Controllers/adminController");
 const authMiddleware = require("../../Middleware/authMiddleware");
 const { adminRegisterValidationRules } = require("../../Middleware/validators/authValidator");
+const { addServiceAreaValidator, editServiceAreaValidator } = require("../../Middleware/validators/serviceAreaValidator");
 const validate = require('../../Middleware/validators/validate');
 const roleMiddleware = require("../../Middleware/roleMiddleware");
+const { listServiceAreas, deleteServiceArea, editServiceArea, addServiceArea } = require("../../Controllers/serviceAreaController");
 
 /* Admin-User Management Routes*/
 const adminRouter = require("express").Router();
@@ -42,6 +44,15 @@ adminRouter.get("/me",authMiddleware, roleMiddleware(['admin']), adminProfile);
 adminRouter.put("/me/",authMiddleware, roleMiddleware(['admin']), updateAdminProfile);
 
 //-----------------------admin prifile--------------------------//
+
+
+
+//---------------------admin -> maning service_areas table ----------------------------------//
+adminRouter.post("/add-service-area",authMiddleware, roleMiddleware(['admin']),addServiceAreaValidator,validate, addServiceArea);
+adminRouter.put("/edit-service-area/:id",authMiddleware, roleMiddleware(['admin']),editServiceAreaValidator,validate, editServiceArea);
+adminRouter.put("/delete-service-area/:id",authMiddleware, roleMiddleware(['admin']), deleteServiceArea);
+adminRouter.get("/list-service-areas",authMiddleware, roleMiddleware(['admin']), listServiceAreas);
+//---------------------admin -> maning service_areas table ----------------------------------//
 
 
 module.exports = adminRouter;

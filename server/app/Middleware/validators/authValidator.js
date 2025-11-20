@@ -88,3 +88,23 @@ exports.adminRegisterValidationRules = [
  
 ];
 
+exports.resetPasswordValidationRules = [
+   body("email")
+    .trim()
+    .notEmpty().withMessage("Email is required")
+    .isEmail().withMessage("Invalid email format")
+    .normalizeEmail(),
+
+  body("new_password")
+    .notEmpty().withMessage("Password is required")
+    .isLength({ min: 6 }).withMessage("Password must be at least 6 characters long"),
+
+  body("confirm_password")
+    .notEmpty().withMessage("Confirm Password is required")
+    .custom((value, { req }) => {
+      if (value !== req.body.new_password) {
+        throw new Error("Confirm Password does not match New Password");
+      }
+      return true;
+    }),
+];

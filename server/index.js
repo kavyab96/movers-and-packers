@@ -5,6 +5,7 @@ const apiRouter = require("./app/Routes")
 const { connectDB } = require("./config/db")
 require("dotenv").config()
 const cookeParser = require("cookie-parser")
+const errorHandler = require("./app/Middleware/errorHandler")
 
 const app =express()
 
@@ -28,6 +29,11 @@ app.use("/api",apiRouter)
 app.get("/",(req,res)=>{
   res.send("hello from backend node")
 })
+
+
+//errorHandler
+app.use(errorHandler)
+
 const PORT =process.env.PORT || 5000
 app.listen(PORT,()=>{
     console.log(`server starts on port ${PORT}`);

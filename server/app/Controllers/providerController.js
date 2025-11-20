@@ -2,8 +2,6 @@
 import User from "../Models/userModel.js";
 import ServiceRequest from "../Models/serviceRequestModel.js";
 import mongoose from "mongoose";
-import KycDocumentDb from "../Models/kycDocumentModel.js";
-import uploadToCloudinary from "../Utilities/imageUpload.js";
 
 
 
@@ -51,11 +49,6 @@ export const getProviders = async (req, res, next) => {
 
 
 
-        console.log("locationId:", locationId);
-        console.log("service_areas DB:", providers.map(p => p.service_areas));
-
-
-
         if (providers.length === 0) {
             return res.status(200).json({
                 message: "No providers match your location and service type.",
@@ -98,10 +91,11 @@ export const getAssignedJobs = async (req, res, next) => {
             });
         }
 
+
         return res.status(200).json({
             message: "Assigned jobs fetched successfully.",
             total: jobs.length,
-            data: grouped
+            data: jobs
         });
 
     } catch (error) {
@@ -197,82 +191,6 @@ export const updateJobStatus = async (req, res, next) => {
             });
 
         }
-
-    } catch (error) {
-        next(error);
-    }
-}
-
-/* View uploaded KYC documents by provider */
-export const getKycDocuments = async (req, res, next) => {
-    try {
-
-        const providerId = req.user._id;
-
-        // Fetch provider
-        const provider = await KycDocument.findById(providerId).select("kyc_documents");
-        if (!provider) {
-            return res.status(404).json({
-                message: "Provider not found."
-            });
-        }
-        return res.status(200).json({
-            message: "KYC documents fetched successfully.",
-            data: provider.kyc_documents
-        });
-    } catch (error) {
-        next(error);
-    }
-}
-
-/* Upload or update KYC documents by provider */
-export const uploadKycDocuments = async (req, res, next) => {
-    try {
-        const providerId = req.user._id;
-        const { document_type } = req.body;
-
-        //validation
-        if (!document_type) {
-            return res.status(400).json({
-                message: "document_type is required."
-            });
-        }
-         //  File check
-        if (!req.file) {
-            return res.status(400).json({
-                message: "KYC document file is required."
-            });
-        }
-
-        //verify provider exists
-        const provider = await User.findById(providerId);
-        if (!provider) {
-            return res.status(404).json({
-                message: "Provider not found."
-            });
-        }        
-        
-        // Upload document to cloudinary
-        let cloudinaryRes = null;
-        if (req.file) {
-            cloudinaryRes = await uploadToCloudinary(req.file.path, 'kyc_doc');
-        }
-
-        const newUser = new KycDocumentDb({
-            user_id: providerId,
-            document_type,
-            file_url: cloudinaryRes.secure_url,
-            status: "pending",
-            updated_by: providerId
-        })
-        const saved = await newUser.save();
-       if (saved) {
-         return res.status(201).json({
-            message: "Doccument uploaded successfully",
-            data: saved
-         });
-      }
-
 
     } catch (error) {
         next(error);

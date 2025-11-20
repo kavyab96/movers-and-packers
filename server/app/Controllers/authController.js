@@ -6,7 +6,7 @@ const uploadToCloudinary = require("../Utilities/imageUpload");
 exports.userRegister = async (req, res, next) => {
    try {
 
-      console.log(req.file, "image uploaded by multer");
+      // console.log(req.file, "image uploaded by multer");
 
 
       const { name, email, password, phone, address, role, service_areas } = req.body;
@@ -111,7 +111,7 @@ exports.logout = async (req, res, next) => {
 /* reset password function*/
 exports.resetPassword = async (req, res, next) => {
    try {
-     
+      
       const { email, new_password, confirm_password } = req.body;
       if (!email || !new_password || !confirm_password) {
          return res.status(400).json({ message: "All fields are required" });
@@ -123,13 +123,13 @@ exports.resetPassword = async (req, res, next) => {
       const user = await userDb.findOne({ email });
       if (!user) {
          return res.status(404).json({ message: "User not found" });
+         
       }
-
       // Hash new password
       const hashed = await hashPassword(new_password);
       user.password = hashed;
       await user.save();
-
+      
       return res.status(200).json({
          message: "Password reset successfully"
       });

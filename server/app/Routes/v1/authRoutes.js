@@ -1,7 +1,7 @@
 const authRouter = require("express").Router();
 // Routes for User Module (Client + Provider + Admin)//
 const {userRegister,login,logout,resetPassword }= require('../../Controllers/authController');
-const {registerValidationRules,loginValidationRules}= require('../../Middleware/validators/authValidator');
+const {registerValidationRules,loginValidationRules, resetPasswordValidationRules}= require('../../Middleware/validators/authValidator');
 const validate = require('../../Middleware/validators/validate');
 const upload = require("../../Middleware/multer");
 
@@ -17,7 +17,7 @@ authRouter.post("/login",loginValidationRules,validate, login);
 authRouter.post("/logout", logout); 
 
 //reset password
-authRouter.post("/reset-password", resetPassword);
+authRouter.post("/reset-password",resetPasswordValidationRules,validate, resetPassword);
 
 
 

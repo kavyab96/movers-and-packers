@@ -56,7 +56,7 @@ const userSchema = new mongoose.Schema({
         required: function () {
             return this.role === "provider";
         },
-        default: null,
+        default:this.role ==="provider" ? "active": null,
     },
 
     service_areas: [

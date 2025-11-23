@@ -1,10 +1,12 @@
 import { createBrowserRouter } from "react-router-dom";
 // import HomePage from "../pages/user/HomePage.jsx";
 import UserLayout from "../layouts/UserLayout.jsx";
-import ErrorPage from "../pages/ErrorPage.jsx";
+import ErrorPage from "../pages/shared/ErrorPage.jsx";
 import About from "../pages/user/About.jsx";
-import Services from "../pages/user/Services.jsx";
+// import Services from "../pages/user/Services.jsx";
 import HomePage from "../pages/user/HomePage.jsx";
+import Login from "../pages/shared/Login.jsx";
+import Register from "../pages/user/Register.jsx";
 
 export const router = createBrowserRouter([
     {
@@ -21,10 +23,20 @@ export const router = createBrowserRouter([
                 element: <About />
             },
 
+            // {
+            //     path:"services",
+            //     element: <Services/>
+            // },
+
+             {
+                path:"login",
+                element: <Login/>
+            },
             {
-                path:"services",
-                element: <Services/>
+                path:"signup",
+                element: <Register/>
             }
+
         ]
     },
 

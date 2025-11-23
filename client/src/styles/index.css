@@ -74,6 +74,15 @@
   --sidebar-accent-foreground: oklch(0.205 0 0);
   --sidebar-border: oklch(0.922 0 0);
   --sidebar-ring: oklch(0.708 0 0);
+
+
+  /*my colors*/
+   --header-bg: #fbbf24; 
+   --header-div-bg :oklch(94.979% 0.084 95.959);
+    --switch-track-light: #f69d0d;
+
+
+  
 }
 
 .dark {
@@ -108,6 +117,13 @@
   --sidebar-accent-foreground: oklch(0.985 0 0);
   --sidebar-border: oklch(1 0 0 / 10%);
   --sidebar-ring: oklch(0.556 0 0);
+
+   /*my colors*/
+   --header-bg: #1f2937; 
+   --header-div-bg :#30353c;
+   --switch-track-dark: #3680f8;
+  
+
 }
 
 @layer base {

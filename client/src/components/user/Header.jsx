@@ -1,29 +1,87 @@
-import React from 'react'
+import React, { useState } from 'react'
 import { Link } from "react-router-dom";
+import {
+  Sheet,
+  SheetContent,
+  SheetDescription,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "@/components/ui/sheet"
+
+import { Button } from "@/components/ui/button";
+import { Menu } from "lucide-react";
+import ThemeToggle from "../../pages/shared/DarkMode";
+
 const Header = () => {
- return (
-    <header className="w-full border-b bg-background">
-      <div className="max-w-6xl mx-auto flex items-center justify-between p-4">
-        
+  const [open, setOpen] = useState(false)
+  return (
+    <header
+      className="w-full h-[12vh] border-b bg-(--header-bg) transition-colors flex justify-center items-center  ">
+      <div className="w-full max-w-[95%] mx-auto  flex items-center justify-between py-2 sm:py-4 px-10 bg-(--header-div-bg) transition-colors rounded-xl 
+     backdrop-blur-3xl border border-white/5 shadow-lg ">
+
         {/* Logo */}
         <Link to="/" className="text-2xl font-bold">
-          Movers
+          <h1 className='text-[1rem] md:text-[1.2rem] lg:text-[1.5rem]'>TransitBee </h1>
         </Link>
 
-        {/* Menu items */}
-        <nav className="flex items-center gap-6">
-          <Link to="/" className="hover:text-primary transition">Home</Link>
-          <Link to="/about" className="hover:text-primary transition">About</Link>
-          <Link to="/services" className="hover:text-primary transition">Services</Link>
-        </nav>
+        {/* RIGHT SIDE BLOCK (menu + join us) */}
+        <div className="hidden  sm:flex items-center gap-8 font-medium ">
+          {/* Menu items */}
+          <nav className="flex items-center gap-6 ">
+            <Link to="/" className="hover:text-primary transition">Home</Link>
+            <Link to="/about" className="hover:text-primary transition">About</Link>
+            {/* <Link to="/services" className="hover:text-primary transition">Services</Link> */}
+            {/* Join Us */}
+            <Link to="/login" className=" hover:text-primary transition">Join Us</Link>
+          </nav>
+          <ThemeToggle />
 
-         <Link to="/" className="text-2xl font-bold">
-          Join Us
-        </Link>
+        </div>
+
+        {/* mobile hamurger menu */}
+
+        <div className="sm:hidden">
+          <Sheet open={open} onOpenChange={setOpen}>
+            <SheetTrigger asChild>
+              <Button variant="ghost" size="icon">
+                <Menu className="w-6 h-6" />
+              </Button>
+            </SheetTrigger>
+
+            <SheetContent side="left" className="p-6">
+              <SheetHeader>
+                <SheetTitle className="text-xl font-bold">
+                  TransitBee
+                </SheetTitle>
+
+                <div className="mt-6 flex flex-col gap-4 text-lg">
+                  <Link to="/" className="hover:text-primary" onClick={() => setOpen(false)}>
+                    Home
+                  </Link>
+                  <Link to="/about" className="hover:text-primary" onClick={() => setOpen(false)}>
+                    About
+                  </Link>
+                  <Link to="/services" className="hover:text-primary" onClick={() => setOpen(false)}>
+                    Services
+                  </Link>
+                  <Link to="/login" className="hover:text-primary font-medium" onClick={() => setOpen(false)}>
+                    Join Us
+                  </Link>
+                  <ThemeToggle />
+                </div>
+              </SheetHeader>
+            </SheetContent>
+
+          </Sheet>
+        </div>
+        {/* mobile hamurger menu */}
+
 
       </div>
     </header>
   );
 }
 
-export default Header
+export default Header;

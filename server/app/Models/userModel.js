@@ -28,7 +28,7 @@ const userSchema = new mongoose.Schema({
     },
     address: {
         type: String,
-        required:function () {
+        required: function () {
             return this.role !== "admin";
         },
         trim: true
@@ -56,13 +56,16 @@ const userSchema = new mongoose.Schema({
         required: function () {
             return this.role === "provider";
         },
-        default:this.role ==="provider" ? "active": null,
+        default: this.role === "provider" ? "active" : null,
     },
 
     service_areas: [
         {
             type: mongoose.Schema.Types.ObjectId,
             ref: "Area",
+            required: function () {
+                return this.role === "provider";
+            },
         }
     ],
 
@@ -72,7 +75,7 @@ const userSchema = new mongoose.Schema({
     },
 
     // ...masterSchema.obj // inherit master schema fields
-},{ timestamps: false })
+}, { timestamps: false })
 userSchema.add(masterSchema);// Merging masterSchema fields into userSchema
 
 module.exports = mongoose.model("User", userSchema)

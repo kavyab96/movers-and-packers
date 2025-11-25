@@ -7,7 +7,14 @@ const upload = require("../../Middleware/multer");
 
 
 // Register as user or provider
-authRouter.post("/register", upload.single("image"), registerValidationRules, validate, userRegister);
+
+// authRouter.post("/register", upload.single("image"), registerValidationRules, validate,  (req, res) => {
+//   console.log("BODY:", req.body); 
+//   console.log("FILE:", req.file);
+//   res.json({ message: "Received", body: req.body, file: req.file });
+// });
+
+authRouter.post("/register", upload.single("image"),registerValidationRules, validate, userRegister);
 
 
 //Login with email & password

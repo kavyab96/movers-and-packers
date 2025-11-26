@@ -9,9 +9,15 @@ const errorHandler = require("./app/Middleware/errorHandler")
 
 const app =express()
 
-app.use(cors())
+app.use(cors(
+   {
+    origin:'http://localhost:5173',
+    credentials:true
+  }
+))
 app.use(express.json())//middleware to parse JSON bodies 
 app.use(cookeParser())
+app.use(express.urlencoded({ extended: true }))
 
 // database connection
 
@@ -21,6 +27,8 @@ connectDB()
 // }).catch((err)=>{
 //     console.log("mongoDB connection error:",err);
 // })
+
+
 
 app.use("/api",apiRouter)
 

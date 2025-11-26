@@ -11,8 +11,7 @@ const UserLayout = () => {
 
 
         <div >
-
-            <main className=" min-h-screen">
+            <main className=" min-h-screen  pb-24">
                 <Header />
                 <Outlet />
             </main>

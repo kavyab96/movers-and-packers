@@ -10,7 +10,13 @@ const upload = require("../../Middleware/multer");
 
 
 //search for providers based on service type and location and date
-providerRouter.get("/get-providers", authMiddleware, getProviders);
+providerRouter.get("/get-providers" , getProviders);
+// providerRouter.get("/get-providers" , (req,res)=>{
+//     console.log(req.query);
+//     res.json({ message: "Received", query: req.query });
+    
+// });
+// authMiddleware
 
 
 

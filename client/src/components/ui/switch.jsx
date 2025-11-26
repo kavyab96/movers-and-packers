@@ -11,7 +11,7 @@ const switchVariants = cva(
         default:
           "data-[state=checked]:bg-primary data-[state=unchecked]:bg-input",
         theme:
-          "data-[state=checked]:bg-(--switch-track-dark) data-[state=unchecked]:bg-(--switch-track-light)",
+          "data-[state=checked]:bg-[var(--switch-track-dark)]  data-[state=unchecked]:bg-[var(--switch-track-light)]",
         header:
           "data-[state=checked]:bg-blue-600 data-[state=unchecked]:bg-yellow-300",
       },

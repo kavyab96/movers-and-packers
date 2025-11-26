@@ -10,16 +10,22 @@ import mongoose from "mongoose";
 export const getProviders = async (req, res, next) => {
     try {
 
-        const { location, date } = req.query;
+       
+        
+        const { pickup, dropoff, date } = req.query;
+        // return res.status(200).json({p:pickup});
+
         //  Validate input
-        if (!location || !date) {
-            return res.status(400).json({
-                message: "location, service_type and date are required.",
-            });
-        }
+        // if (!dropoff || !date) {
+        //     return res.status(400).json({
+        //         message: "location, service_type and date are required.",
+        //     });
+        // }
+        
 
         // Convert location string → ObjectId
-        const locationId = new mongoose.Types.ObjectId(location);
+        const pickupId = new mongoose.Types.ObjectId(pickup);
+        const dropoffId = new mongoose.Types.ObjectId(dropoff);
 
 
 
@@ -43,7 +49,7 @@ export const getProviders = async (req, res, next) => {
         const providers = await User.find({
             role: "provider",
             is_active: true,
-            service_areas: { $in: [locationId] },     // provider covers this location
+            service_areas: { $in: [pickupId,dropoffId] },     // provider covers this location
             _id: { $nin: busyProviderIds }
         }).select("name email phone service_areas");
 

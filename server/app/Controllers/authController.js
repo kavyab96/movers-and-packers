@@ -8,14 +8,15 @@ exports.userRegister = async (req, res, next) => {
 
       // console.log(req.file, "image uploaded by multer");
 
+      // console.log(req);
 
       const { name, email, password, phone, address, role, service_areas } = req.body;
       if (password !== req.body.confirm_password) {
-         return res.status(400).json({ message: "Password and Confirm Password do not match" });
+         return res.status(400).json({ error: "Password and Confirm Password do not match" });
       }
       const userExists = await userDb.findOne({ $or: [{ email }, { phone }] });
       if (userExists) {
-         return res.status(400).json({ message: "Email or Phone number already in use" });
+         return res.status(400).json({ error: "Email or Phone number already in use" });
       }
 
       let cloudinaryRes = null;
@@ -23,6 +24,7 @@ exports.userRegister = async (req, res, next) => {
          cloudinaryRes = await uploadToCloudinary(req.file.path, 'profile-pics');
          // console.log(cloudinaryRes, "image uploaded to cloudinary");
       }
+
 
       const hasedPassword = await hashPassword(password);
       const newUser = new userDb({
@@ -32,6 +34,7 @@ exports.userRegister = async (req, res, next) => {
          phone,
          address,
          role,
+         availability_status: role === "provider" ? "active" : undefined,
          service_areas: role === "provider" ? service_areas : [],// Only set service_areas for providers   
          profile_pic: cloudinaryRes
       })
@@ -111,7 +114,7 @@ exports.logout = async (req, res, next) => {
 /* reset password function*/
 exports.resetPassword = async (req, res, next) => {
    try {
-      
+
       const { email, new_password, confirm_password } = req.body;
       if (!email || !new_password || !confirm_password) {
          return res.status(400).json({ message: "All fields are required" });
@@ -123,13 +126,13 @@ exports.resetPassword = async (req, res, next) => {
       const user = await userDb.findOne({ email });
       if (!user) {
          return res.status(404).json({ message: "User not found" });
-         
+
       }
       // Hash new password
       const hashed = await hashPassword(new_password);
       user.password = hashed;
       await user.save();
-      
+
       return res.status(200).json({
          message: "Password reset successfully"
       });

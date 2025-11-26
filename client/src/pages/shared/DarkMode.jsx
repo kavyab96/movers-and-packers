@@ -7,6 +7,8 @@ export default function ThemeToggle() {
         localStorage.getItem("theme") || "light"
     );
 
+    console.log(theme,'hard ref');
+    
     useEffect(() => {
         if (theme === "dark") {
             document.documentElement.classList.add("dark");
@@ -18,8 +20,8 @@ export default function ThemeToggle() {
 
     return (
 
-        <div className="flex items-center gap-2">           
-            <div className={`flex items-center gap-2 border p-2 rounded-xl
+        <div className="flex items-center gap-2  ">           
+            <div className={`flex items-center gap-2 border p-1.5 rounded-xl
                     ${theme === "dark" 
                     ? "border-(--switch-track-dark)" 
                     : "border-(--switch-track-light)"} 
@@ -35,6 +37,7 @@ export default function ThemeToggle() {
 
                 <Switch
                     theme={theme}
+                    checked={theme === "dark"} 
                     onCheckedChange={(value) =>
                         setTheme(value ? "dark" : "light")
                     }

@@ -159,3 +159,24 @@ export const listServiceAreas = async (req, res, next) => {
         next(error);
     }
 }
+
+/*get all area for dropdown in register form*/
+
+export const getAllAreas = async (req, res, next) => {
+    try {
+
+        const areas = await ServiceArea.find(
+            { is_active: true },     //  filter
+            { name: 1 }              //  return only name + _id
+        ).sort({ name: 1 });      
+
+        return res.status(200).json({
+            success: true,
+            data: areas
+        });
+       
+    } catch (error) {
+        next(error);
+
+    }
+}

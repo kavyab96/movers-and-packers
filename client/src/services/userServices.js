@@ -5,4 +5,10 @@ export const getAreasService = (data) => {
 }
 
 
-
+export const searchProviders = (query) => {
+  return axiosInstance.get("/provider/get-providers",
+    {
+    params: query
+  });
+ 
+};

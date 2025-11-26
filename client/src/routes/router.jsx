@@ -7,19 +7,20 @@ import About from "../pages/user/About.jsx";
 import HomePage from "../pages/user/HomePage.jsx";
 import Login from "../pages/shared/Login.jsx";
 import Register from "../pages/user/Register.jsx";
+import ProviderResults from "../pages/user/ProviderResults.jsx";
 
 export const router = createBrowserRouter([
     {
         path: "/",
         element: <UserLayout />,
         errorElement: <ErrorPage />,
-        children : [
+        children: [
             {
-                path:"",
+                path: "",
                 element: <HomePage />
             },
             {
-                path:"about",
+                path: "about",
                 element: <About />
             },
 
@@ -28,14 +29,19 @@ export const router = createBrowserRouter([
             //     element: <Services/>
             // },
 
-             {
-                path:"login",
-                element: <Login/>
+            {
+                path: "login",
+                element: <Login />
             },
             {
-                path:"signup",
-                element: <Register/>
+                path: "signup",
+                element: <Register />
+            },
+            {
+                path: "/providers",
+                element: <ProviderResults />
             }
+
 
         ]
     },

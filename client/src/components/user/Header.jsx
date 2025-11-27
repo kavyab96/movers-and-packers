@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { Link } from "react-router-dom";
+import { NavLink } from "react-router-dom";
 import {
   Sheet,
   SheetContent,
@@ -15,6 +15,9 @@ import ThemeToggle from "../../pages/shared/DarkMode";
 
 const Header = () => {
   const [open, setOpen] = useState(false)
+
+  
+  
   return (
     <header
       className="w-full h-[12vh] border-b bg-(--header-bg) transition-colors flex justify-center items-center  ">
@@ -22,19 +25,23 @@ const Header = () => {
      backdrop-blur-3xl border border-white/5 shadow-lg ">
 
         {/* Logo */}
-        <Link to="/" className="text-2xl font-bold">
+        <NavLink to="/" className="text-2xl font-bold" >
           <h1 className='text-[1rem] md:text-[1.2rem] lg:text-[1.5rem]'>TransitBee </h1>
-        </Link>
+        </NavLink>
 
         {/* RIGHT SIDE BLOCK (menu + join us) */}
         <div className="hidden  sm:flex items-center gap-8 font-medium ">
           {/* Menu items */}
           <nav className="flex items-center gap-6 ">
-            <Link to="/" className="hover:text-primary transition">Home</Link>
-            <Link to="/about" className="hover:text-primary transition">About</Link>
-            {/* <Link to="/services" className="hover:text-primary transition">Services</Link> */}
+            <NavLink to="/"  className={
+                  ({ isActive }) => isActive
+                    ? "text-amber-800 font-semibold"
+                    : "hover:text-amber-600"
+                }>Home</NavLink>
+            <NavLink to="/about"  className={({ isActive }) => isActive? "text-amber-800 font-semibold": "hover:text-amber-600"}>About</NavLink>
+            {/* <NavLink to="/services" className="hover:text-primary transition">Services</NavLink> */}
             {/* Join Us */}
-            <Link to="/login" className=" hover:text-primary transition">Join Us</Link>
+            <NavLink to="/login" className={({ isActive }) => isActive? "text-amber-800 font-semibold": "hover:text-amber-600"}>Join Us</NavLink>
           </nav>
           <ThemeToggle />
 
@@ -57,18 +64,19 @@ const Header = () => {
                 </SheetTitle>
 
                 <div className="mt-6 flex flex-col gap-4 text-lg">
-                  <Link to="/" className="hover:text-primary" onClick={() => setOpen(false)}>
+                  <NavLink to="/" className={({ isActive }) => isActive? "text-amber-800 font-semibold": "hover:text-amber-600"} onClick={() => setOpen(false)}>
                     Home
-                  </Link>
-                  <Link to="/about" className="hover:text-primary" onClick={() => setOpen(false)}>
+                  </NavLink>
+                  <NavLink to="/about"className={({ isActive }) => isActive? "text-amber-800 font-semibold": "hover:text-amber-600"}
+                   onClick={() => setOpen(false)}>
                     About
-                  </Link>
-                  <Link to="/services" className="hover:text-primary" onClick={() => setOpen(false)}>
+                  </NavLink>
+                  {/* <NavLink to="/services" className={({ isActive }) => isActive? "text-amber-800 font-semibold": "hover:text-amber-600"} onClick={() => setOpen(false)}>
                     Services
-                  </Link>
-                  <Link to="/login" className="hover:text-primary font-medium" onClick={() => setOpen(false)}>
+                  </NavLink> */}
+                  <NavLink to="/login" className={({ isActive }) => isActive? "text-amber-800 font-semibold": "hover:text-amber-600"} onClick={() => setOpen(false)}>
                     Join Us
-                  </Link>
+                  </NavLink>
                   <ThemeToggle />
                 </div>
               </SheetHeader>

@@ -12,3 +12,8 @@ export const regService = (formData) => {
     )
 }
 
+
+export const logoutService = () => {
+    return axiosInstance.post("/auth/logout" )
+}
+

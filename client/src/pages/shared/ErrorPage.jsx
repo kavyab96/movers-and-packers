@@ -5,7 +5,7 @@ const ErrorPage = () => {
   return (
 
     <div>
-      <Header/>
+      {/* <Header/> */}
        Page not exists
     </div>
   )

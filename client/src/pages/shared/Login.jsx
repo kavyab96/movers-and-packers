@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { toast } from 'sonner';
 import {
   Card,
@@ -15,8 +15,13 @@ import { Button } from "@/components/ui/button";
 import { Mail, Lock, Eye, EyeOff } from "lucide-react";
 
 import { loginService } from "../../services/authServices";
+import { useDispatch } from "react-redux";
+import { saveUser } from "../../redux/features/userSlice";
 
 const Login = () => {
+  const navigate = useNavigate()
+  const dispatch = useDispatch()
+
   const [showPassword, setShowPassword] = useState(false);
   const [formData, setFormData] = useState({
     email: "",
@@ -52,9 +57,12 @@ const Login = () => {
     if (validate()) {
       try {
         const res = await loginService(formData);
-        toast.success("Login successful!");
         setErrors({});
+        toast.success("Login successful!");
+        dispatch(saveUser(res.data.userExists))
+        const role=res.data.userExists.role;
 
+        navigate(`/${role}/dashboard`)
       } catch (error) {
         if (error.response?.status === 400) {          
           toast.error(error.response.data.error || "Login failed");
@@ -69,8 +77,8 @@ const Login = () => {
 
 
   return (
-    <div className="flex justify-center items-center min-h-screen bg-background relative">
-      <Card className="w-full max-w-sm shadow-lg absolute top-[20%]">
+    <div className="flex justify-center items-center min-h-screen bg-background pt-24">
+      <Card className="w-full max-w-sm shadow-lg ">
         <CardHeader>
           <CardTitle>Login</CardTitle>
           <CardDescription>Access your account securely</CardDescription>

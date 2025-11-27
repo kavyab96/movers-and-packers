@@ -75,14 +75,11 @@
   --sidebar-border: oklch(0.922 0 0);
   --sidebar-ring: oklch(0.708 0 0);
 
-
   /*my colors*/
    --header-bg: #fbbf24; 
    --header-div-bg :oklch(94.979% 0.084 95.959);
     --switch-track-light: #f69d0d;
 
-
-  
 }
 
 .dark {
@@ -122,7 +119,6 @@
    --header-bg: #1f2937; 
    --header-div-bg :#30353c;
    --switch-track-dark: #3680f8;
-  
 
 }
 

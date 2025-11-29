@@ -18,10 +18,10 @@ export default function Footer() {
 
         {/* Middle menu */}
         <nav className="flex flex-col gap-2 text-sm">
-          <Link to="/" className="hover:text-primary">Home</Link>
+          {/* <Link to="/" className="hover:text-primary">Home</Link>
           <Link to="/about" className="hover:text-primary">About</Link>
           <Link to="/services" className="hover:text-primary">Services</Link>
-          <Link to="/login" className="hover:text-primary">Join Us</Link>
+          <Link to="/login" className="hover:text-primary">Join Us</Link> */}
         </nav>
 
         {/* Right social icons */}

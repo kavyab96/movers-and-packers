@@ -40,7 +40,8 @@ export const getProviders = async (req, res, next) => {
         //  Find busy providers
         const busyProviders = await ServiceRequest.find({
             requested_date_time: { $gte: startOfDay, $lte: endOfDay },
-            status: { $in: ["accepted", "in-progress"] }
+            status: { $in: ["accepted", "in-progress"] },
+            is_active:true
         }).select("provider_id");
         const busyProviderIds = busyProviders.map(b => b.provider_id.toString());
 
@@ -51,7 +52,12 @@ export const getProviders = async (req, res, next) => {
             is_active: true,
             service_areas: { $in: [pickupId,dropoffId] },     // provider covers this location
             _id: { $nin: busyProviderIds }
-        }).select("name email phone service_areas");
+        })
+        .populate({
+            path:"service_areas",
+            select :"name"
+        })
+        .select("name email phone service_areas is_active");
 
 
 
@@ -61,14 +67,11 @@ export const getProviders = async (req, res, next) => {
                 data: []
             });
         }
-
         return res.status(200).json({
             message: "Providers fetched successfully",
             total: providers.length,
             data: providers,
         });
-
-
 
     }
     catch (error) {

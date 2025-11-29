@@ -6,6 +6,9 @@ import ServiceRequest from "../Models/serviceRequestModel.js";
 export const createBooking = async (req, res, next) => {
     try {
 
+        return res.status(400).json({
+                message: req.body,
+            });
 
         const {
             client_id,

@@ -10,9 +10,13 @@ import mongoose from "mongoose";
 export const getProviders = async (req, res, next) => {
     try {
 
-       
-        
-        const { pickup, dropoff, date } = req.query;
+        const { pickup, dropoff, date, page = 1, limit = 5 } = req.query;
+
+        const pageNum = parseInt(page);
+        const limitNum = parseInt(limit);
+        const skip = (pageNum - 1) * limitNum;
+
+        // const { pickup, dropoff, date } = req.query;
         // return res.status(200).json({p:pickup});
 
         //  Validate input
@@ -21,43 +25,49 @@ export const getProviders = async (req, res, next) => {
         //         message: "location, service_type and date are required.",
         //     });
         // }
-        
+
 
         // Convert location string → ObjectId
         const pickupId = new mongoose.Types.ObjectId(pickup);
         const dropoffId = new mongoose.Types.ObjectId(dropoff);
-
-
 
         // Convert date into day range
         const reqDate = new Date(date);
         const startOfDay = new Date(reqDate.setHours(0, 0, 0, 0));
         const endOfDay = new Date(reqDate.setHours(23, 59, 59, 999));
 
-
-
-
         //  Find busy providers
         const busyProviders = await ServiceRequest.find({
             requested_date_time: { $gte: startOfDay, $lte: endOfDay },
             status: { $in: ["accepted", "in-progress"] },
-            is_active:true
+            is_active: true
         }).select("provider_id");
         const busyProviderIds = busyProviders.map(b => b.provider_id.toString());
+
+
+        // TOTAL COUNT (without skip/limit)
+        const total = await User.countDocuments({
+            role: "provider",
+            is_active: true,
+            service_areas: { $in: [pickupId, dropoffId] },
+            _id: { $nin: busyProviderIds },
+        });
 
 
         //  Find providers matching location & service type
         const providers = await User.find({
             role: "provider",
             is_active: true,
-            service_areas: { $in: [pickupId,dropoffId] },     // provider covers this location
+            service_areas: { $in: [pickupId, dropoffId] },     // provider covers this location
             _id: { $nin: busyProviderIds }
         })
-        .populate({
-            path:"service_areas",
-            select :"name"
-        })
-        .select("name email phone service_areas is_active");
+            .populate({
+                path: "service_areas",
+                select: "name"
+            })
+            .select("name email phone service_areas is_active")
+            .skip(skip)
+            .limit(limitNum);
 
 
 
@@ -67,9 +77,17 @@ export const getProviders = async (req, res, next) => {
                 data: []
             });
         }
+        // return res.status(200).json({
+        //     message: "Providers fetched successfully",
+        //     total: providers.length,
+        //     data: providers,
+        // });
+
         return res.status(200).json({
             message: "Providers fetched successfully",
-            total: providers.length,
+            total,
+            currentPage: pageNum,
+            totalPages: Math.ceil(total / limitNum),
             data: providers,
         });
 

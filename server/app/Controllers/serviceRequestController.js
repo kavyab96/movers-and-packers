@@ -6,9 +6,9 @@ import ServiceRequest from "../Models/serviceRequestModel.js";
 export const createBooking = async (req, res, next) => {
     try {
 
-        return res.status(400).json({
-                message: req.body,
-            });
+        // return res.status(400).json({
+        //         message: req.body,
+        //     });
 
         const {
             client_id,
@@ -23,7 +23,7 @@ export const createBooking = async (req, res, next) => {
 
         if (!client_id || !provider_id || !service_type || !pickup_location || !area_in_square_feet) {
             return res.status(400).json({
-                message:
+                error:
                     "client_id, provider_id, service_type, pickup_location and area_in_square_feet are required.",
             });
         }
@@ -46,7 +46,7 @@ export const createBooking = async (req, res, next) => {
 
         if (existingBooking) {
             return res.status(400).json({
-                message:
+                error:
                     "A booking already exists with the same service type, provider, and date. Please choose another date.",
             });
         }
@@ -103,7 +103,8 @@ export const getBookings = async (req, res, next) => {
         const bookings = await ServiceRequest.find(filter)
             .sort({ requested_date_time: -1 })  // latest first
             .populate("provider_id", "name email phone")  // show provider details
-            .populate("client_id", "name email phone");   // optional
+            .populate("pickup_location", "name ") 
+            .populate("dropoff_location", "name ");  
 
         return res.status(200).json({
             message: "Bookings fetched successfully",

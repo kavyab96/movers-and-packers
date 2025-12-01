@@ -1,6 +1,5 @@
 import ServiceSearchForm from "@/components/search/ServiceSearchForm";
 import { useAreas } from "../../context/AreaContext";
-import { useNavigate } from "react-router-dom";
 import { useState } from "react";
 import { searchProviders } from "../../services/userServices";
 
@@ -28,28 +27,62 @@ import {
 
 const BookService = () => {
   const { areas } = useAreas();
-  const navigate = useNavigate();
+  // const [open, setOpen] = useState(false)
+
+
+  
+  //selected provider for dialog
+  const [selectedProvider, setSelectedProvider] = useState(null);
 
 
   const [providers, setProviders] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(0);
+  const [lastSearchValues, setLastSearchValues] = useState(null);
   const itemsPerPage = 5;
-  const totalPages = Math.ceil(providers.length / itemsPerPage);
-  const currentItems = providers.slice(
-    (currentPage - 1) * itemsPerPage,
-    currentPage * itemsPerPage
-  );
 
-  const handleSearch = async ({ pickup, dropoff, date }) => {
+  //   const handleSearch = async({ pickup, dropoff, date }, page = 1)) => {
+  //   try {
+  //     const data = { pickup, dropoff, date, page, limit: 5 };
+  //     const res = await searchProviders(data);
+  //     setTotalPages(res.data.totalPages);
+  //     setCurrentPage(res.data.currentPage);
+  //     setProviders(res.data.data);
+  //   } catch {
+  //     toast.error("Unable to load providers");
+  //   }
+  // };
+
+  // This runs for pagination navigation clicks
+  const handlePageChange = (page) => {
+    if (!lastSearchValues) return;
+    fetchProviders(lastSearchValues, page);
+  };
+
+  // This runs when user clicks Search
+  const handleSearch = async (values) => {
+    setLastSearchValues(values);
+    await fetchProviders(values, 1);
+  };
+
+  // FETCH PROVIDERS WITH PAGINATION
+  const fetchProviders = async (values, page = 1) => {
     try {
-      const data = { pickup, dropoff, date };
-      const res = await searchProviders(data);
+      const params = {
+        ...values,
+        page,
+        limit: itemsPerPage,
+      };
+
+      const res = await searchProviders(params);
+
       setProviders(res.data.data);
-    } catch {
+      setCurrentPage(res.data.currentPage);
+      setTotalPages(res.data.totalPages);
+    } catch (error) {
       toast.error("Unable to load providers");
     }
   };
-
 
   return (
     <div>
@@ -73,7 +106,7 @@ const BookService = () => {
             </TableHeader>
 
             <TableBody>
-              {currentItems.map((p) => (
+              {providers.map((p) => (
                 <TableRow key={p._id}>
                   <TableCell className="font-medium">{p.name}</TableCell>
                   <TableCell>{p.email}</TableCell>
@@ -121,8 +154,16 @@ const BookService = () => {
 
 
                   <TableCell className="text-right">
-                    <Dialog>
-                      <DialogTrigger asChild>
+                    <button
+                      onClick={() => setSelectedProvider(p)}
+                      className="px-3 py-1 bg-primary text-white dark:text-black rounded-md hover:bg-primary/90"
+                    >
+                      Book Now
+                    </button>
+                  </TableCell>
+                  {/* <TableCell className="text-right">
+                    <Dialog open={open} onOpenChange={setOpen}>
+                      <DialogTrigger asChild onClick={() => setOpen(true)}>
 
 
                         <button className="px-3 py-1 bg-primary text-white dark:text-black rounded-md hover:bg-primary/90">
@@ -130,10 +171,11 @@ const BookService = () => {
                         </button>
                       </DialogTrigger>
                       <DialogContent className="max-w-lg">
-                        <BookingForm provider={p} areas={areas} />
+                        <BookingForm provider={p} areas={areas} onClose={() => setOpen(false)} />
                       </DialogContent>
                     </Dialog>
-                  </TableCell>
+                  </TableCell> */}
+
 
                 </TableRow>
               ))}
@@ -141,34 +183,39 @@ const BookService = () => {
           </Table>
 
 
-          {/* pagination code  */}
+
+          {/* PAGINATION */}
           <Pagination className="mt-6">
             <PaginationContent>
 
-              {/* Previous button */}
+              {/* Previous */}
               <PaginationItem>
                 <PaginationPrevious
-                  onClick={() => currentPage > 1 && setCurrentPage(currentPage - 1)}
+                  onClick={() =>
+                    currentPage > 1 && handlePageChange(currentPage - 1)
+                  }
                   className={currentPage === 1 ? "pointer-events-none opacity-50" : ""}
                 />
               </PaginationItem>
 
-              {/* Page Numbers */}
+              {/* Page numbers */}
               {[...Array(totalPages)].map((_, index) => (
                 <PaginationItem key={index}>
                   <PaginationLink
                     isActive={currentPage === index + 1}
-                    onClick={() => setCurrentPage(index + 1)}
+                    onClick={() => handlePageChange(index + 1)}
                   >
                     {index + 1}
                   </PaginationLink>
                 </PaginationItem>
               ))}
 
-              {/* Next button */}
+              {/* Next */}
               <PaginationItem>
                 <PaginationNext
-                  onClick={() => currentPage < totalPages && setCurrentPage(currentPage + 1)}
+                  onClick={() =>
+                    currentPage < totalPages && handlePageChange(currentPage + 1)
+                  }
                   className={currentPage === totalPages ? "pointer-events-none opacity-50" : ""}
                 />
               </PaginationItem>
@@ -176,11 +223,27 @@ const BookService = () => {
             </PaginationContent>
           </Pagination>
 
-
-
-
         </div>
       )}
+
+
+      {/* SINGLE DIALOG — handles ALL rows */}
+      {selectedProvider && (
+        <Dialog
+          open={!!selectedProvider}
+          onOpenChange={() => setSelectedProvider(null)}
+        >
+          <DialogContent className="max-w-lg">
+            <BookingForm
+              provider={selectedProvider}
+              areas={areas}
+              onClose={() => setSelectedProvider(null)}
+            />
+          </DialogContent>
+        </Dialog>
+      )}
+
+
     </div>
   );
 };

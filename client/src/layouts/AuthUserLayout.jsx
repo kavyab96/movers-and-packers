@@ -4,7 +4,7 @@ import { Outlet } from "react-router-dom";
 import AuthHeader from "../components/user/AuthHeader";
 import Footer from "../components/user/Footer";
 
-import { SidebarProvider, SidebarInset  } from "@/components/ui/sidebar";
+import { SidebarProvider, SidebarInset } from "@/components/ui/sidebar";
 import AppSidebar from "../components/user/AppSidebar";
 
 const AuthUserLayout = () => {
@@ -21,14 +21,14 @@ const AuthUserLayout = () => {
         <AuthHeader />
 
         {/* PAGE CONTENT */}
-        <main className="flex-1 p-6">
+        <main className="min-h-screen w-full p-6">
           <Outlet />
         </main>
 
         <Footer />
       </SidebarInset>
 
-    </SidebarProvider>
+    </SidebarProvider >
   );
 };
 

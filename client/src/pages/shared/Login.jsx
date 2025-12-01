@@ -139,14 +139,14 @@ const Login = () => {
               </div>
 
               {/* Forgot Password Link */}
-              <div className="flex justify-end mt-1">
+              {/* <div className="flex justify-end mt-1">
                 <a
                   href="/forgot-password"
                   className="text-xs text-primary hover:underline"
                 >
                   Forgot password?
                 </a>
-              </div>
+              </div> */}
             </div>
 
             <Button className="w-full" >Login</Button>

@@ -15,6 +15,8 @@ import AuthRoutes from "./protected/AuthRoutes.jsx";
 
 import BookService from "../pages/client/BookService.jsx";
 import Bookings from "../pages/client/Bookings.jsx";
+import UsersList from "../pages/admin/UsersList.jsx";
+import BookingList from "../pages/admin/BookingList.jsx";
 
 
 export const router = createBrowserRouter([
@@ -54,6 +56,8 @@ export const router = createBrowserRouter([
         errorElement: <ErrorPage />,
         children: [
             { path: 'dashboard', element: <Dashboard /> },
+            { path: 'users', element: <UsersList /> },
+            { path: 'service-requests', element: <BookingList /> },
             { path: 'profile', element: <Profile /> },
             { path: "*", element: <ErrorPage /> },
             //   { path: '/users', element: <User /> },

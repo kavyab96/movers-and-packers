@@ -74,7 +74,9 @@ exports.userRegister = async (req, res, next) => {
 exports.login = async (req, res, next) => {
    try {
       const { email, password } = req.body;
-      const userExists = await userDb.findOne({ email });
+      const userExists = await userDb.findOne({ email })
+      .populate("service_areas", "name _id"); 
+      
       if (!userExists) {
          return res.status(400).json({ error: "Invalid email" });
       }

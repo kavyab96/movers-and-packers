@@ -63,7 +63,7 @@ const Bookings = () => {
                                     <MapPin className="h-5 w-5 text-primary" />
                                     <div>
                                         <p className="text-sm text-muted-foreground">Pickup</p>
-                                        <p className="font-medium">{b.pickup_location}</p>
+                                        <p className="font-medium">{b.pickup_location?.name}</p>
                                     </div>
                                 </div>
 
@@ -72,7 +72,7 @@ const Bookings = () => {
                                     <Truck className="h-5 w-5 text-primary" />
                                     <div>
                                         <p className="text-sm text-muted-foreground">Drop</p>
-                                        <p className="font-medium">{b.dropoff_location}</p>
+                                        <p className="font-medium">{b.dropoff_location?.name}</p>
                                     </div>
                                 </div>
                             </div>

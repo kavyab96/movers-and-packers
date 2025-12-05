@@ -1,5 +1,5 @@
 import React from 'react'
-import { NavLink } from 'react-router-dom'
+import { NavLink, useNavigate } from 'react-router-dom'
 import ThemeToggle from "../../pages/shared/DarkMode";
 import { useDispatch, useSelector } from "react-redux"
 import { logoutService } from '../../services/authServices';
@@ -8,19 +8,19 @@ import { clearUser } from '../../redux/features/userSlice';
 // import { SidebarTrigger } from "@/components/ui/sidebar";
 
 
-
 const AuthHeader =  () => {
   const userData = useSelector((state) => state.user)
   console.log(userData, 'from auth header');
   const dispatch = useDispatch()
+  const navigate = useNavigate()
 
   const handleLogout= async()=>{
     try {
       const res = await logoutService()
-      if(res){
-       
+      if(res){       
         persistor.purge();
         dispatch(clearUser())
+        navigate("/")
       }
     } catch (error) {
       console.log(error);
@@ -40,7 +40,7 @@ const AuthHeader =  () => {
 
        <SidebarTrigger  className="mt-1"/> */}
         {/* Logo */}
-        <NavLink to="/" className="text-2xl font-bold" >
+        <NavLink  className="text-2xl font-bold" >
           <h1 className='text-[1rem] md:text-[1.2rem] lg:text-[1.5rem]'>TransitBee </h1>
         </NavLink>
       {/* </div> */}

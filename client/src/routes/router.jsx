@@ -15,8 +15,13 @@ import AuthRoutes from "./protected/AuthRoutes.jsx";
 
 import BookService from "../pages/client/BookService.jsx";
 import Bookings from "../pages/client/Bookings.jsx";
+
+import JobList from "../pages/provider/JobList.jsx";
+import Earnings from "../pages/provider/Earnings.jsx";
+
 import UsersList from "../pages/admin/UsersList.jsx";
 import BookingList from "../pages/admin/BookingList.jsx";
+import ServiceAreasList from "../pages/admin/ServiceAreasList.jsx";
 
 
 export const router = createBrowserRouter([
@@ -58,6 +63,7 @@ export const router = createBrowserRouter([
             { path: 'dashboard', element: <Dashboard /> },
             { path: 'users', element: <UsersList /> },
             { path: 'service-requests', element: <BookingList /> },
+            { path: 'service-areas', element: <ServiceAreasList /> },
             { path: 'profile', element: <Profile /> },
             { path: "*", element: <ErrorPage /> },
             //   { path: '/users', element: <User /> },
@@ -70,7 +76,9 @@ export const router = createBrowserRouter([
         element: <AuthRoutes> <AuthUserLayout /> </AuthRoutes>,
         children: [
             { path: 'dashboard', element: <Dashboard /> },
+            { path: 'jobs', element: <JobList /> },
             { path: 'profile', element: <Profile /> },
+            { path: 'earnings', element: <Earnings /> },
             //   { path: '/users', element: <User /> },
             //   { path: '/admin-dashboard', element:<AdminRoute> <AdminDashboard/> </AdminRoute> },
             { path: "*", element: <ErrorPage /> },

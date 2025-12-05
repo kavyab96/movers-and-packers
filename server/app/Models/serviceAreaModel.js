@@ -32,6 +32,19 @@ const serviceAreaSchema = new mongoose.Schema(
       type: [String], // Array of pin codes
       default: [],
     },
+
+    // latitude
+    latitude: {
+      type: Number,
+      default: null,
+    },
+
+    // longitude
+    longitude: {
+      type: Number,
+      default: null,
+    },
+
   },
   { timestamps: false } // We are using our own custom timestamps from masterSchema
 );

@@ -101,15 +101,27 @@ export const getProviders = async (req, res, next) => {
 /* Get assigned jobs for provider */
 export const getAssignedJobs = async (req, res, next) => {
     try {
+        const { page = 1, limit = 5 } = req.query;
+
+
+        const pageNum = parseInt(page);
+        const limitNum = parseInt(limit);
+        const skip = (pageNum - 1) * limitNum;
+
         const providerId = req.user._id;
 
         // Fetch all jobs assigned to this provider
         const jobs = await ServiceRequest.find({
-            provider_id: providerId
+            provider_id: providerId,
+            is_active: true
         })
-            .sort({ requested_date_time: -1 })
             .populate("client_id", "name email phone")
-            .populate("provider_id", "name email phone");
+            .populate("provider_id", "name email phone")
+            .populate("pickup_location", "name")
+            .populate("dropoff_location", "name")
+            .sort({ requested_date_time: -1 })
+            .skip(skip)
+            .limit(limitNum);
 
         if (!jobs || jobs.length === 0) {
             return res.status(200).json({
@@ -118,10 +130,19 @@ export const getAssignedJobs = async (req, res, next) => {
             });
         }
 
+        // TOTAL COUNT (without skip/limit)
+        const total = await ServiceRequest.countDocuments({
+            provider_id: providerId,
+            is_active: true,
+        });
+
+
 
         return res.status(200).json({
             message: "Assigned jobs fetched successfully.",
-            total: jobs.length,
+            total,
+            currentPage: pageNum,
+            totalPages: Math.ceil(total / limitNum),
             data: jobs
         });
 
@@ -138,27 +159,32 @@ export const updateJobStatus = async (req, res, next) => {
         const providerId = req.user._id;
         const bookingId = req.params.id;
         const { status, tracking_status } = req.body;
+        // return res.status(200).json({
+        //         params: req.params,
+        //         body:req.body,
+        //         message:"from server"
+        //     });
 
         // VALID STATUSES
-        const allowedStatuses = ["accepted", "rejected", "in-progress", "completed"];
+        const allowedStatuses = ["accepted", "cancelled", "in-progress", "completed", "pending"];
         const allowedTracking = ["en-route", "arrived", "loading", "moving", "unloading", "completed"];
 
         // Validate status
         if (!status && !tracking_status) {
             return res.status(400).json({
-                message: "Either status or tracking_status is required."
+                error: "Either status or tracking_status is required."
             });
         }
 
         if (status && !allowedStatuses.includes(status)) {
             return res.status(400).json({
-                message: `Invalid status. Allowed: ${allowedStatuses.join(", ")}`
+                error: `Invalid status. Allowed: ${allowedStatuses.join(", ")}`
             });
         }
 
         if (tracking_status && !allowedTracking.includes(tracking_status)) {
             return res.status(400).json({
-                message: `Invalid tracking_status. Allowed: ${allowedTracking.join(", ")}`
+                error: `Invalid tracking_status. Allowed: ${allowedTracking.join(", ")}`
             });
         }
 
@@ -170,14 +196,14 @@ export const updateJobStatus = async (req, res, next) => {
 
         if (!booking) {
             return res.status(404).json({
-                message: "Booking not found or does not belong to you."
+                error: "Booking not found or does not belong to you."
             });
         }
 
         // Prevent updates on cancelled / completed bookings
         if (["cancelled", "completed"].includes(booking.status)) {
             return res.status(400).json({
-                message: `Cannot update because booking is already ${booking.status}.`
+                error: `Cannot update because booking is already ${booking.status}.`
             });
         }
 
@@ -196,7 +222,7 @@ export const updateJobStatus = async (req, res, next) => {
             }
 
             // If job rejected → provider is still "active"
-            if (["rejected", "completed"].includes(status)) {
+            if (["cancelled", "completed"].includes(status)) {
                 await User.findByIdAndUpdate(providerId, {
                     availability_status: "active"
                 });
@@ -207,9 +233,16 @@ export const updateJobStatus = async (req, res, next) => {
             // APPLY TRACKING STATUS
             // -------------------------
 
-            if (tracking_status) {
+            // if (tracking_status) {
+            //     booking.tracking_status = tracking_status;
+            // }
+
+            if (tracking_status === "") {
+                booking.tracking_status = null;  // clear the field
+            } else if (tracking_status) {
                 booking.tracking_status = tracking_status;
             }
+            
             booking.updated_by = providerId;
             await booking.save();
             return res.status(200).json({

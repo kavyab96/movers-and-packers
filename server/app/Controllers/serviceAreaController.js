@@ -1,5 +1,9 @@
 import ServiceArea from "../Models/serviceAreaModel.js";
+import ServiceRequest from "../Models/serviceRequestModel.js";
 import { capitalizeFirst } from "../Utilities/stringHelper.js";
+import { getLatLngFromAddress } from "../Utilities/geocode.js";
+
+
 /* add service area  by admin */
 export const addServiceArea = async (req, res, next) => {
     try {
@@ -12,15 +16,20 @@ export const addServiceArea = async (req, res, next) => {
         state = capitalizeFirst(state);
         country = capitalizeFirst(country);
 
-
         //  Prevent duplicate area names
         const existingArea = await ServiceArea.findOne({
             name: { $regex: new RegExp(`^${name}$`, "i") } // case-insensitive
         });
 
         if (existingArea) {
-            return res.status(409).json({ message: "This service area already exists.", });
+            return res.status(400).json({ error: "This service area already exists.", });
         }
+
+
+        // Build full address for geocoding
+        const fullAddress = `${name}, ${city}, ${state}, ${country}`;
+        // Fetch lat/lng via Google API
+        const { lat, lng } = await getLatLngFromAddress(fullAddress);
 
         // Create new area
         const newArea = await ServiceArea.create({
@@ -29,7 +38,11 @@ export const addServiceArea = async (req, res, next) => {
             state: state || null,
             country: country || null,
             postal_code: Array.isArray(postal_code) ? postal_code : [],
-            updated_by: userId
+            updated_by: userId,
+
+            //AUTOMATIC LAT/LNG HERE
+            latitude: lat,
+            longitude: lng,
         });
 
         return res.status(201).json({
@@ -57,6 +70,9 @@ export const editServiceArea = async (req, res, next) => {
                 message: "Service area not found.",
             });
         }
+        // Track whether location fields changed → need new geocode lookup
+        let needGeocode = false;
+
         if (name) {
             name = capitalizeFirst(name);
 
@@ -71,18 +87,53 @@ export const editServiceArea = async (req, res, next) => {
                 });
             }
 
+            if (area.name !== name) needGeocode = true;
+
             area.name = name;
         }
 
 
+
+
         // Format other fields if provided
-        if (city) area.city = capitalizeFirst(city);
-        if (state) area.state = capitalizeFirst(state);
-        if (country) area.country = capitalizeFirst(country);
-        if (postal_code) area.postal_code = Array.isArray(postal_code) ? postal_code : [];
+        // if (city) area.city = capitalizeFirst(city);
+        // if (state) area.state = capitalizeFirst(state);
+        // if (country) area.country = capitalizeFirst(country);
+        // if (postal_code) area.postal_code = Array.isArray(postal_code) ? postal_code : [];
+
+        if (city && area.city !== city) {
+            area.city = capitalizeFirst(city);
+            needGeocode = true;
+        }
+
+        if (state && area.state !== state) {
+            area.state = capitalizeFirst(state);
+            needGeocode = true;
+        }
+
+        if (country && area.country !== country) {
+            area.country = capitalizeFirst(country);
+            needGeocode = true;
+        }
+
+        if (postal_code) {
+            area.postal_code = Array.isArray(postal_code) ? postal_code : [];
+        }
+        // If address changed → recalculate lat/lng        
+        if (needGeocode) {
+
+            const fullAddress = `${area.name}, ${area.city}, ${area.state}, ${area.country}`;
+
+            const { lat, lng } = await getLatLngFromAddress(fullAddress);
+
+            // return res.status(400).json({ lat: lat, lng: lng, msg: "hi there" })
+            area.latitude = lat;
+            area.longitude = lng;
+        }
 
         // Audit trail
         area.updated_by = userId;
+        // return res.status(200).json({area:area,lat:needGeocode})
 
         await area.save();
 
@@ -107,9 +158,29 @@ export const deleteServiceArea = async (req, res, next) => {
 
         if (!area) {
             return res.status(404).json({
-                message: "Service area not found.",
+                error: "Service area not found.",
             });
         }
+
+        // Check if this area is currently used in active service requests
+        const activeStatuses = ["pending", "accepted", "in-progress"];
+
+        const activeRequests = await ServiceRequest.findOne({
+            status: { $in: activeStatuses },
+            is_active: true,
+            $or: [
+                { pickup_location: areaId },
+                { dropoff_location: areaId }
+            ]
+        });
+
+        if (activeRequests) {
+            return res.status(400).json({
+                error: "This service area cannot be deleted because it is currently in use.",
+                in_use: true
+            });
+        }
+        //------------------------------------------------
 
         // If already soft-deleted
         if (!area.is_active) {
@@ -136,6 +207,10 @@ export const deleteServiceArea = async (req, res, next) => {
 /* list service areas  by admin */
 export const listServiceAreas = async (req, res, next) => {
     try {
+        const { page = 1, limit = 5 } = req.query;
+        const pageNum = parseInt(page);
+        const limitNum = parseInt(limit);
+        const skip = (pageNum - 1) * limitNum;
 
         const { search } = req.query;
         const filter = { is_active: true };
@@ -147,11 +222,22 @@ export const listServiceAreas = async (req, res, next) => {
 
         // Fetch areas
         const areas = await ServiceArea.find(filter)
-            .sort({ name: 1 }); // Alphabetical order
+            .sort({ name: 1 }) // Alphabetical order
+            .skip(skip)
+            .limit(limitNum);
+
+
+        // TOTAL COUNT (without skip/limit)
+        const total = await ServiceArea.find(filter).countDocuments({
+            is_active: true,
+        });
+
 
         return res.status(200).json({
             message: "Service areas fetched successfully.",
-            total: areas.length,
+            total,
+            currentPage: pageNum,
+            totalPages: Math.ceil(total / limitNum),
             data: areas
         });
 
@@ -168,13 +254,13 @@ export const getAllAreas = async (req, res, next) => {
         const areas = await ServiceArea.find(
             { is_active: true },     //  filter
             { name: 1 }              //  return only name + _id
-        ).sort({ name: 1 });      
+        ).sort({ name: 1 });
 
         return res.status(200).json({
             success: true,
             data: areas
         });
-       
+
     } catch (error) {
         next(error);
 

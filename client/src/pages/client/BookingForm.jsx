@@ -38,12 +38,15 @@ import {
   DialogDescription,
   DialogFooter
 } from "@/components/ui/dialog";
-import { createBookingService } from "../../services/bookingServices";
+import { calculateCostService, createBookingService } from "../../services/bookingServices";
 import FullPageLoader from "../../components/loaders/FullPageLoader";
 
 const BookingForm = ({ provider, areas, onClose }) => {
   const userData = useSelector((state) => state.user.user)
   const [loading, setLoading] = useState(false);
+  const [distanceKm, setDistanceKm] = useState(null);
+  const [estimatedCost, setEstimatedCost] = useState(null);
+
   const form = useForm({
     defaultValues: {
       client_id: userData._id,
@@ -58,11 +61,38 @@ const BookingForm = ({ provider, areas, onClose }) => {
     }
   });
 
+  // AUTO CALCULATE COST
+  const calculateCost = async () => {
+    const values = form.getValues();
+
+    if (!values.service_type || !values.pickup_location || !values.area_in_square_feet) return;
+    if (values.service_type !== "packing" && !values.dropoff_location) return;
+
+    try {
+      const { data } = await calculateCostService({
+        pickup_location: values.pickup_location,
+        dropoff_location: values.dropoff_location,
+        area_in_square_feet: values.area_in_square_feet,
+        service_type: values.service_type
+      });
+
+      setDistanceKm(data.distance_km);
+      setEstimatedCost(data.estimated_cost);
+
+    } catch (err) {
+      console.log("Cost API Error:", err);
+    }
+  };
+
 
   const onSubmit = async (values) => {
     setLoading(true);
     try {
-      const bookingData = { ...values };
+      const bookingData = {
+        ...values,
+        distance_km: distanceKm,
+        estimated_cost: estimatedCost
+      };
 
       //API call
       await createBookingService(bookingData);
@@ -145,7 +175,13 @@ const BookingForm = ({ provider, areas, onClose }) => {
                 <FormItem className="w-ful">
                   <FormLabel>Service Type</FormLabel>
                   <FormControl >
-                    <Select onValueChange={field.onChange} value={field.value} >
+                    <Select
+                      //  onValueChange={field.onChange} 
+                      onValueChange={(v) => {
+                        field.onChange(v);
+                        calculateCost();
+                      }}
+                      value={field.value} >
                       <SelectTrigger className="w-full h-11">
                         <SelectValue placeholder="Select service type" />
                       </SelectTrigger>
@@ -170,7 +206,13 @@ const BookingForm = ({ provider, areas, onClose }) => {
                 <FormItem className="w-full">
                   <FormLabel>Pickup Location</FormLabel>
                   <FormControl>
-                    <Select onValueChange={field.onChange} value={field.value}>
+                    <Select
+                      // onValueChange={field.onChange}
+                      onValueChange={(v) => {
+                        field.onChange(v);
+                        calculateCost();
+                      }}
+                      value={field.value}>
                       {/* defaultValue={field.value} */}
                       <SelectTrigger className="w-full h-11">
                         <SelectValue placeholder="Select pickup location" />
@@ -199,7 +241,13 @@ const BookingForm = ({ provider, areas, onClose }) => {
                 <FormItem className="w-full">
                   <FormLabel>Drop-off Location</FormLabel>
                   <FormControl>
-                    <Select onValueChange={field.onChange} value={field.value}>
+                    <Select
+                      //  onValueChange={field.onChange}
+                      onValueChange={(v) => {
+                        field.onChange(v);
+                        calculateCost();
+                      }}
+                      value={field.value}>
                       <SelectTrigger className="w-full h-11">
                         <SelectValue placeholder="Select drop-off location" />
                       </SelectTrigger>
@@ -226,7 +274,12 @@ const BookingForm = ({ provider, areas, onClose }) => {
                 <FormItem className="w-full h-11">
                   <FormLabel>Area (in square feet)</FormLabel>
                   <FormControl>
-                    <Input type="number" placeholder="e.g., 1200" {...field} className=" h-11" />
+                    <Input type="number" placeholder="e.g., 1200" {...field}
+                      onChange={(e) => {
+                        field.onChange(e);
+                        calculateCost();
+                      }}
+                      className=" h-11" />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -251,6 +304,24 @@ const BookingForm = ({ provider, areas, onClose }) => {
               )}
             />
           </div>
+
+
+          {/* DISTANCE + COST DISPLAY */}
+          {distanceKm !== null && (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+
+              <div>
+                <FormLabel>Distance (KM)</FormLabel>
+                <Input value={`${distanceKm} km`} disabled />
+              </div>
+
+              <div>
+                <FormLabel>Estimated Cost</FormLabel>
+                <Input value={`₹ ${estimatedCost}`} disabled />
+              </div>
+
+            </div>
+          )}
 
 
 

@@ -147,10 +147,10 @@ const ProfileInfoCard = ({ user, areas }) => {
 
                 {/* SERVICE AREAS */}
                 {user.role === "provider" && (
-                    <div className="flex items-start gap-4">
+                    <div className="flex items-start gap-4 w-full">
                         <MapPin className="h-5 w-5 text-primary mt-2" />
 
-                        <div className="w-full">
+                        <div className="w-full md:w-[43%]">
                             <p className="text-sm text-muted-foreground">Service Areas</p>
 
                             {editMode ? (

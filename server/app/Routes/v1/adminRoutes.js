@@ -1,5 +1,5 @@
 const { verify } = require("jsonwebtoken");
-const { adminRegister, getAllUsers ,updateAdminProfile, userDelete, verifyProvider ,adminProfile } = require("../../Controllers/adminController");
+const { adminRegister, getAllUsers ,updateAdminProfile, userDelete, verifyProvider ,adminProfile, getAllBookings } = require("../../Controllers/adminController");
 const authMiddleware = require("../../Middleware/authMiddleware");
 const { adminRegisterValidationRules } = require("../../Middleware/validators/authValidator");
 const { addServiceAreaValidator, editServiceAreaValidator } = require("../../Middleware/validators/serviceAreaValidator");
@@ -21,6 +21,10 @@ adminRouter.post("/register",adminRegisterValidationRules, validate, adminRegist
 
 //Admin	Get list of all users
 adminRouter.get("/getAllUsers",authMiddleware, roleMiddleware(['admin']),getAllUsers);
+
+//admin get all service requests
+adminRouter.get("/getAllBookings",authMiddleware, roleMiddleware(['admin']),getAllBookings);
+
 
 //admin update user  $ provider profile
 // adminRouter.put("/update/:id",authMiddleware, ghggh);

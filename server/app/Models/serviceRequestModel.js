@@ -111,6 +111,11 @@ const serviceRequestSchema = new mongoose.Schema(
       trim: true,
     },
 
+    distance_km: {
+      type: Number,
+      default: null,
+    },
+
 
   },
   { timestamps: false } // We are using our own custom timestamps from masterSchema

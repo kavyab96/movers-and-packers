@@ -16,83 +16,80 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Eye, Pencil, ShieldCheck, XCircle } from "lucide-react";
+import { getAllJobsService, updateJobService } from "../../services/providerServices"; // your API service
 
 import FullPageLoader from "../../components/loaders/FullPageLoader";
 import DataTablePagination from "../../components/table/DataTablePagination";
 
 import { Tooltip, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip";
-import { getAllUsersService } from "../../services/adminServices";
-import { formatDate } from "../../utils/format";
 
-// import EditJobDialog from "../provider/EditJobDialog"
+import EditJobDialog from "../provider/EditJobDialog"
 
-const UserList = () => {
+const JobList = () => {
 
-    const [total, setTotal] = useState(0);
     const [currentPage, setCurrentPage] = useState(1);
     const [totalPages, setTotalPages] = useState(0);
     const [itemsPerPage, setItemsPerPage] = useState(2);
 
-    const [users, setUsers] = useState([]);
+    const [jobs, setJobs] = useState([]);
     const [loading, setLoading] = useState(true);
 
 
     //edit dialog-------------
-    // const [selectedJob, setSelectedJob] = useState(null);
-    // const [editOpen, setEditOpen] = useState(false);
+    const [selectedJob, setSelectedJob] = useState(null);
+    const [editOpen, setEditOpen] = useState(false);
 
-    // const handleJobUpdate = async (jobId, updatedData) => {
-    //     try {
-    //         // API call
-    //         await updateuserservice(jobId, updatedData)
-    //         toast.success("Job updated successfully");
+    const handleJobUpdate = async (jobId, updatedData) => {
+        try {
+            // API call
+            await updateJobService(jobId, updatedData)
+            toast.success("Job updated successfully");
 
-    //         // Update UI with real backend data
-    //         setUsers(prev =>
-    //             prev.map(j => (j._id === jobId ? updatedData : j))
-    //         );
+            // Update UI with real backend data
+            setJobs(prev =>
+                prev.map(j => (j._id === jobId ? updatedData : j))
+            );
 
-    //         // Close dialog
-    //         setEditOpen(false);
+            // Close dialog
+            setEditOpen(false);
 
-    //         // Refetch the fresh page from server
-    //         fetchUsers(currentPage, itemsPerPage);
+            // Refetch the fresh page from server
+            fetchJobs(currentPage, itemsPerPage);
 
-    //     } catch (error) {
-    //         if (error.response?.status === 400) {
-    //             toast.error(error.response.data.error || "Updation failed");
-    //         } else {
-    //             toast.error("Something went wrong. Please try again.");
-    //         }
+        } catch (error) {
+            if (error.response?.status === 400) {
+                toast.error(error.response.data.error || "Updation failed");
+            } else {
+                toast.error("Something went wrong. Please try again.");
+            }
 
-    //     }
+        }
 
-    // };
+    };
 
     //edit dialog-------------
 
+    
 
-
-    // Fetch users
+    // Fetch jobs
     useEffect(() => {
-        fetchUsers(currentPage, itemsPerPage);
+        fetchJobs(currentPage, itemsPerPage);
     }, [currentPage, itemsPerPage]);
 
 
-    const fetchUsers = async (page = 1, limit = itemsPerPage) => {
+    const fetchJobs = async (page = 1, limit = itemsPerPage) => {
         try {
             setLoading(true);
 
             const params = { page, limit }
-            const res = await getAllUsersService(params);
+            const res = await getAllJobsService(params);
             const result = res.data;
 
-            setUsers(result.data || []);
+            setJobs(result.data || []);
             setTotalPages(result.totalPages || 1);
             setCurrentPage(result.currentPage || 1);
-            setTotal(result.total || 0)
         } catch (error) {
-            console.log("Failed to load users", error);
+            console.log("Failed to load jobs", error);
         } finally {
             setLoading(false);
         }
@@ -103,9 +100,9 @@ const UserList = () => {
             {loading && <FullPageLoader />}
 
 
-            <h1 className="text-2xl font-bold">users</h1>
+            <h1 className="text-2xl font-bold">Jobs</h1>
             <p className="text-muted-foreground">
-                Total : { total}
+                Manage and view all jobs assigned to you or created by users.
             </p>
 
 
@@ -114,12 +111,12 @@ const UserList = () => {
                 <Table>
                     <TableHeader>
                         <TableRow>
-                            <TableHead>Name</TableHead>
-                            <TableHead>Role</TableHead>
+                            <TableHead>Booking ID</TableHead>
+                            <TableHead>Customer</TableHead>
                             <TableHead>Phone</TableHead>
-                            <TableHead>Email</TableHead>
-                            <TableHead>Address</TableHead>
-                            <TableHead>Joined Date</TableHead>
+                            <TableHead>Pickup</TableHead>
+                            <TableHead>Drop-off</TableHead>
+                            <TableHead>Status</TableHead>
                             <TableHead className="text-center">Actions</TableHead>
                         </TableRow>
                     </TableHeader>
@@ -137,33 +134,32 @@ const UserList = () => {
                                     </TableCell>
                                 </TableRow>
                             ))
-                        ) : users.length === 0 ? (
+                        ) : jobs.length === 0 ? (
                             <TableRow>
                                 <TableCell colSpan="5" className="text-center py-6 text-muted-foreground">
-                                    No users found.
+                                    No jobs found.
                                 </TableCell>
                             </TableRow>
                         ) : (
-                            users.map((user) => (
-                                <TableRow key={user._id}>
-                                    <TableCell className="font-medium">{user.name}</TableCell>
-                                    <TableCell>{user.role}</TableCell>
-                                    <TableCell>{user.phone}</TableCell>
-                                    <TableCell>{user.email}</TableCell>
-                                    <TableCell>{user.address}</TableCell>
-                                    <TableCell>{formatDate(user.created_at)}</TableCell>
+                            jobs.map((job) => (
+                                <TableRow key={job._id}>
+                                    <TableCell className="font-medium">{job.booking_id}</TableCell>
+                                    <TableCell>{job.client_id?.name}</TableCell>
+                                    <TableCell>{job.client_id?.phone}</TableCell>
+                                    <TableCell>{job.pickup_location?.name}</TableCell>
+                                    <TableCell>{job.dropoff_location?.name}</TableCell>
                                     <TableCell>
                                         <Badge
                                             variant={
-                                                user.status === "completed"
+                                                job.status === "completed"
                                                     ? "success"
-                                                    : user.status === "in-progress"
+                                                    : job.status === "in-progress"
                                                         ? "default"
                                                         : "secondary"
                                             }
                                             className="capitalize"
                                         >
-                                            {user.status}
+                                            {job.status}
                                         </Badge>
                                     </TableCell>
 
@@ -179,7 +175,7 @@ const UserList = () => {
                                             </TooltipContent>
                                         </Tooltip> */}
 
-                                        {/* <Tooltip>
+                                        <Tooltip>
                                             <TooltipTrigger asChild>
                                                 <Button size="sm"
                                                     variant="secondary"
@@ -194,7 +190,7 @@ const UserList = () => {
                                             <TooltipContent>
                                                 Edit
                                             </TooltipContent>
-                                        </Tooltip> */}
+                                        </Tooltip>
 
 
 
@@ -221,14 +217,14 @@ const UserList = () => {
 
 
             {/* edit dialog component */}
-            {/* {selectedJob && (
+            {selectedJob && (
                 <EditJobDialog
                     job={selectedJob}
                     open={editOpen}
                     onClose={() => setEditOpen(false)}
                     onUpdate={handleJobUpdate}
                 />
-            )} */}
+            )}
 
 
         </div>
@@ -238,4 +234,4 @@ const UserList = () => {
 
 
 
-export default UserList;
+export default JobList;

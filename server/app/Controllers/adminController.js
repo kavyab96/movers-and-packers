@@ -2,6 +2,8 @@
 const userDb = require("../Models/userModel");
 const { hashPassword } = require("../Utilities/passwordUtilities");
 
+const ServiceRequest = require("../Models/serviceRequestModel.js");
+
 /* admin register function*/
 exports.adminRegister = async (req, res, next) => {
     try {
@@ -35,13 +37,79 @@ exports.adminRegister = async (req, res, next) => {
 /* Get all users list (clients and providers) */
 exports.getAllUsers = async (req, res, next) => {
     try {
+        const { page = 1, limit = 5 } = req.query;
+        const pageNum = parseInt(page);
+        const limitNum = parseInt(limit);
+        const skip = (pageNum - 1) * limitNum;
+
         const users = await userDb.find({
             role: { $in: ["user", "provider"] },
             is_active: true
-        }).select('-password');
+        }).select('-password')
+            .sort({ created_at: -1 })
+            .skip(skip)
+            .limit(limitNum);
+
+
+        // TOTAL COUNT (without skip/limit)
+        const total = await userDb.countDocuments({
+            role: { $in: ["user", "provider"] },
+            is_active: true,
+        });
+        
         return res.status(200).json({
-            message: "Users fetched successfully",
+            message: "Users fetched successfully.",
+            total,
+            currentPage: pageNum,
+            totalPages: Math.ceil(total / limitNum),
             data: users
+        });
+
+    } catch (error) {
+        next(error)
+    }
+}
+
+/* Get all users list (clients and providers) */
+exports.getAllBookings = async (req, res, next) => {
+    try {
+        const { page = 1, limit = 5 } = req.query;
+        const pageNum = parseInt(page);
+        const limitNum = parseInt(limit);
+        const skip = (pageNum - 1) * limitNum;
+
+
+        const jobs = await ServiceRequest.find({
+            is_active: true
+        }).populate("client_id", "name")
+            .populate("provider_id", "name")
+            .populate("pickup_location", "name")
+            .populate("dropoff_location", "name")
+            .select("booking_id client_id provider_id service_type requested_date_time status tracking_status pickup_location dropoff_location area_in_square_feet created_at")
+            .sort({ created_at: -1 })
+            .skip(skip)
+            .limit(limitNum);
+
+
+        // return res.status(200).json({
+        //     message: "bookings fetched successfully",
+        //     data: jobs
+        // });
+
+
+        // TOTAL COUNT (without skip/limit)
+        const total = await ServiceRequest.countDocuments({
+            is_active: true,
+        });
+
+
+
+        return res.status(200).json({
+            message: "Bookings fetched successfully.",
+            total,
+            currentPage: pageNum,
+            totalPages: Math.ceil(total / limitNum),
+            data: jobs
         });
 
     } catch (error) {

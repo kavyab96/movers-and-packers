@@ -30,4 +30,5 @@ export const getUserBookingsService = (query) => {
     params: query
   });
 };
+
 //client-----------------------------------------------------

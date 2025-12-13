@@ -10,3 +10,10 @@ export const getAllJobsService = (query) => {
 export const updateJobService = (id , formData) => {
   return axiosInstance.put(`/provider/update-job/${id}`, formData)
 }
+
+//get provider payments/earnings
+export const getPaymentsService = (query) => {
+  return axiosInstance.get("/provider/get-payments",{
+    params: query
+  });
+}

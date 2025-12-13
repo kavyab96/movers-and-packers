@@ -24,6 +24,14 @@ import { Tooltip, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip
 import { getAllUsersService } from "../../services/adminServices";
 import { formatDate } from "../../utils/format";
 
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
+
 // import EditJobDialog from "../provider/EditJobDialog"
 
 const UserList = () => {
@@ -35,6 +43,14 @@ const UserList = () => {
 
     const [users, setUsers] = useState([]);
     const [loading, setLoading] = useState(true);
+
+    //filters
+    // const [search, setSearch] = useState("");
+    // const [role, setRole] = useState("all"); 
+     const [filters, setFilters] = useState({
+        search: "",
+        role: "all",// all | user | provider
+      });
 
 
     //edit dialog-------------
@@ -76,14 +92,19 @@ const UserList = () => {
     // Fetch users
     useEffect(() => {
         fetchUsers(currentPage, itemsPerPage);
-    }, [currentPage, itemsPerPage]);
+    }, [currentPage, itemsPerPage, filters]);
 
 
     const fetchUsers = async (page = 1, limit = itemsPerPage) => {
         try {
             setLoading(true);
 
-            const params = { page, limit }
+            const params = {
+                page,
+                limit,
+                search: filters.search || undefined,
+                role: filters.role !== "all" ? filters.role : undefined,
+            }
             const res = await getAllUsersService(params);
             const result = res.data;
 
@@ -104,9 +125,45 @@ const UserList = () => {
 
 
             <h1 className="text-2xl font-bold">users</h1>
-            <p className="text-muted-foreground">
-                Total : { total}
-            </p>
+            <div className="flex flex-wrap gap-4 items-center justify-between">
+                <p className="text-muted-foreground">
+                    Total : {total}
+                </p>
+
+                <div className="flex gap-3">
+                    {/* Role Filter */}
+                    <Select
+                        value={filters.role}
+                        onValueChange={(value) => {
+                            setFilters((prev)=>({...prev, role: value}));
+                            setCurrentPage(1);
+                        }}
+                    >
+                        <SelectTrigger className="w-40">
+                            <SelectValue placeholder="Filter by role" />
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectItem value="all">All roles</SelectItem>
+                            <SelectItem value="user">User</SelectItem>
+                            <SelectItem value="provider">Provider</SelectItem>
+                        </SelectContent>
+                    </Select>
+
+                    {/* Search */}
+                    <input
+                        type="text"
+                        placeholder="Search users/phone/Email..."
+                        value={filters.search}
+                        onChange={(e) => {
+                            setFilters((prev)=>({...prev, search: e.target.value}));
+                            setCurrentPage(1);
+                        }}
+                        className="h-9 w-50 rounded-md border border-input bg-background px-3 text-sm shadow-sm focus:outline-none focus:ring-1 focus:ring-ring"
+                    />
+                </div>
+            </div>
+
+
 
 
             <Card className="p-4">
@@ -120,7 +177,7 @@ const UserList = () => {
                             <TableHead>Email</TableHead>
                             <TableHead>Address</TableHead>
                             <TableHead>Joined Date</TableHead>
-                            <TableHead className="text-center">Actions</TableHead>
+                            {/* <TableHead className="text-center">Actions</TableHead> */}
                         </TableRow>
                     </TableHeader>
 
@@ -167,8 +224,8 @@ const UserList = () => {
                                         </Badge>
                                     </TableCell>
 
-                                    <TableCell className="text-right flex justify-end gap-2">
-                                        {/* <Tooltip>
+                                    {/* <TableCell className="text-right flex justify-end gap-2"> */}
+                                    {/* <Tooltip>
                                             <TooltipTrigger asChild>
                                                 <Button size="sm" variant="secondary" >
                                                     <Eye className="h-4 w-4 mr-1" />
@@ -179,7 +236,7 @@ const UserList = () => {
                                             </TooltipContent>
                                         </Tooltip> */}
 
-                                        {/* <Tooltip>
+                                    {/* <Tooltip>
                                             <TooltipTrigger asChild>
                                                 <Button size="sm"
                                                     variant="secondary"
@@ -198,7 +255,7 @@ const UserList = () => {
 
 
 
-                                    </TableCell>
+                                    {/* </TableCell>     */}
                                 </TableRow>
                             ))
                         )}

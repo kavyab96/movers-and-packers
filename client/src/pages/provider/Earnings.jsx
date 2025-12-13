@@ -1,168 +1,289 @@
-import React, { useEffect, useState } from 'react'
-import axiosInstance from '@/axios/axiosInstance'
-import { Table, TableBody, TableCaption, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
-import {
-  Pagination,
-  PaginationContent,
-  PaginationItem,
-  PaginationLink,
-  PaginationNext,
-  PaginationPrevious,
-} from '@/components/ui/pagination'
-import { Badge } from '@/components/ui/badge'
+import React, { useEffect, useState } from "react";
+import { Card } from "@/components/ui/card";
+import { toast } from "sonner";
 
-const formatCurrency = (value) => {
-  if (value == null) return '-'
-  try {
-    return new Intl.NumberFormat(undefined, { style: 'currency', currency: 'USD' }).format(value)
-  } catch {
-    return value
-  }
-}
+
+
+import {
+  Table,
+  TableHeader,
+  TableRow,
+  TableHead,
+  TableBody,
+  TableCell,
+} from "@/components/ui/table";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Eye, Pencil, SearchX } from "lucide-react";
+import { getPaymentsService } from "../../services/providerServices"; // your API service
+
+import FullPageLoader from "../../components/loaders/FullPageLoader";
+import DataTablePagination from "../../components/table/DataTablePagination";
+
+import { Tooltip, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip";
+
+// import EditJobDialog from "../provider/EditJobDialog"
+import { formatDate } from "../../utils/format";
+import EarningsFilter from "../../components/filters/EarningsFilter";
+import EmptyState from "@/pages/shared/EmptyState.jsx";
 
 const Earnings = () => {
-  const [payments, setPayments] = useState([])
-  const [loading, setLoading] = useState(false)
-  const [error, setError] = useState(null)
 
-  const [currentPage, setCurrentPage] = useState(1)
-  const [totalPages, setTotalPages] = useState(1)
-  const [itemsPerPage, setItemsPerPage] = useState(10)
-  const [totalCount, setTotalCount] = useState(0)
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(0);
+  const [itemsPerPage, setItemsPerPage] = useState(2);
+  const [total, setTotal] = useState(2);
+
+  const [payments, setPayments] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  const [filters, setFilters] = useState({
+    date: null,
+  });
+
+  const [totalEarnings, setTotalEarnings] = useState(0);
+
+
+
+
+  //edit dialog-------------
+  // const [selectedJob, setSelectedJob] = useState(null);
+  // const [editOpen, setEditOpen] = useState(false);
+
+  // const handleJobUpdate = async (jobId, updatedData) => {
+  //     try {
+  //         // API call
+  //         await updateJobService(jobId, updatedData)
+  //         toast.success("Job updated successfully");
+
+  //         // Update UI with real backend data
+  //         setJobs(prev =>
+  //             prev.map(j => (j._id === jobId ? updatedData : j))
+  //         );
+
+  //         // Close dialog
+  //         // setEditOpen(false);
+
+  //         // Refetch the fresh page from server
+  //         fetchPayments(currentPage, itemsPerPage);
+
+  //     } catch (error) {
+  //         if (error.response?.status === 400) {
+  //             toast.error(error.response.data.error || "Updation failed");
+  //         } else {
+  //             toast.error("Something went wrong. Please try again.");
+  //         }
+
+  //     }
+
+  // };
+
+  //edit dialog-------------
+
+
+
+  // Fetch payments
+  useEffect(() => {
+    fetchPayments(currentPage, itemsPerPage);
+  }, [currentPage, itemsPerPage, filters]);
+
 
   const fetchPayments = async (page = 1, limit = itemsPerPage) => {
-    setLoading(true)
-    setError(null)
     try {
-      const res = await axiosInstance.get('/provider/get-payments', {
-        params: { page, limit }
-      })
+      setLoading(true);
 
-      const d = res?.data || {}
-
-      // Support multiple response shapes
-      const items = d.data || d.payments || []
-      const current = d.currentPage || d.current_page || d.page || page
-      const pages = d.totalPages || d.total_pages || Math.max(1, Math.ceil((d.total || items.length) / limit))
-      const total = d.total ?? d.count ?? items.length
-
-      setPayments(items)
-      setCurrentPage(current)
-      setTotalPages(pages)
-      setTotalCount(total)
-    } catch (err) {
-      setError(err?.response?.data?.message || err.message || 'Failed to load payments')
+      const params = {
+        page,
+        limit,
+        date: filters.date ? filters.date.toISOString() : undefined,
+      }
+      const res = await getPaymentsService(params);
+      const result = res.data;
+      setPayments(result.data || []);
+      setTotalPages(result.totalPages || 1);
+      setCurrentPage(result.currentPage || 1);
+      setTotal(result.total || 0);
+      setTotalEarnings(result.totalEarnings || 0);
+    } catch (error) {
+      console.log("Failed to load payments", error);
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
-  useEffect(() => {
-    fetchPayments(1, itemsPerPage)
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [itemsPerPage])
 
-  const handlePageChange = (page) => {
-    if (page < 1 || page > totalPages) return
-    fetchPayments(page, itemsPerPage)
-  }
+
+
+
+  const hasActiveFilters =
+    filters.date !== null;
+  //||
+  // filters.requestedDate !== "all" ||
+  // filters.serviceType !== "all" ||
+  // filters.jobStatus !== "all";
+
+  const handleClearFilters = () => {
+    setFilters({ date: null });
+    setCurrentPage(1);
+  };
 
   return (
-    <div className="p-4">
-      <div className="mb-4 flex items-center justify-between">
-        <h2 className="text-lg font-semibold">Earnings</h2>
-        <div className="flex items-center gap-2">
-          <label className="text-sm">Rows:</label>
-          <select
-            value={itemsPerPage}
-            onChange={(e) => { setItemsPerPage(Number(e.target.value)); setCurrentPage(1) }}
-            className="border rounded px-2 py-1 text-sm"
-          >
-            <option value={5}>5</option>
-            <option value={10}>10</option>
-            <option value={25}>25</option>
-            <option value={50}>50</option>
-          </select>
+    <div className="max-w-6xl mx-auto space-y-6">
+      {loading && <FullPageLoader />}
+
+
+      <h1 className="text-2xl font-bold">Earnings</h1>
+      <div className="flex flex-wrap justify-between md:items-center">
+        <div className="flex gap-7">
+          <p className="text-lg font-medium">Total : {total} </p>
+          <p className="text-lg font-medium">Total Earnings : ₹{totalEarnings} </p>
         </div>
+
+
+        <EarningsFilter
+          filters={filters}
+          onChange={(newFilters) => {
+            setFilters(newFilters);
+            setCurrentPage(1); // reset pagination
+          }}
+          onClear={() => {
+            setFilters({
+              createdDate: "all",
+            });
+            setCurrentPage(1);
+          }}
+        />
       </div>
 
-      <Table>
-        <TableHeader>
-          <TableRow>
-            <TableHead>Date</TableHead>
-            <TableHead>Booking ID</TableHead>
-            <TableHead>Amount</TableHead>
-            <TableHead>Method</TableHead>
-            <TableHead>Status</TableHead>
-            <TableHead>Notes</TableHead>
-          </TableRow>
-        </TableHeader>
 
-        <TableBody>
-          {loading ? (
+      <Card className="p-4">
+        {/* Table Header */}
+        <Table>
+          <TableHeader>
             <TableRow>
-              <TableCell colSpan={6} className="text-center">Loading...</TableCell>
+              <TableHead>Booking ID</TableHead>
+              <TableHead>Customer</TableHead>
+              <TableHead>Payment Status</TableHead>
+              <TableHead>Amount</TableHead>
+              <TableHead>Created Date</TableHead>
+
+
             </TableRow>
-          ) : error ? (
-            <TableRow>
-              <TableCell colSpan={6} className="text-center text-red-500">{error}</TableCell>
-            </TableRow>
-          ) : payments.length === 0 ? (
-            <TableRow>
-              <TableCell colSpan={6} className="text-center">No payments found.</TableCell>
-            </TableRow>
-          ) : (
-            payments.map((p) => (
-              <TableRow key={p._id || p.id}>
-                <TableCell>{new Date(p.payment_date || p.createdAt || p.paymentDate || p.date || p.timestamp).toLocaleString()}</TableCell>
-                <TableCell className="font-medium">{p.booking_id || p.bookingId || p.requestId || '-'}</TableCell>
-                <TableCell>{formatCurrency(p.amount || p.total || p.payable)}</TableCell>
-                <TableCell>{p.payment_method || p.method || '-'}</TableCell>
-                <TableCell>
-                  <Badge variant={p.payment_status === 'success' || p.status === 'paid' ? 'secondary' : 'outline'}>
-                    {p.payment_status || p.status || p.paymentStatus || '-'}
-                  </Badge>
+          </TableHeader>
+
+          <TableBody>
+            {loading ? (
+              [...Array(5)].map((_, i) => (
+                <TableRow key={i}>
+                  <TableCell><Skeleton className="h-4 w-20" /></TableCell>
+                  <TableCell><Skeleton className="h-4 w-24" /></TableCell>
+                  <TableCell><Skeleton className="h-4 w-24" /></TableCell>
+                  <TableCell><Skeleton className="h-6 w-14" /></TableCell>
+                  <TableCell className="text-right">
+                    <Skeleton className="h-8 w-16 ml-auto" />
+                  </TableCell>
+                </TableRow>
+              ))
+            ) : payments.length === 0 ? (
+              <TableRow>
+                <TableCell colSpan={11}>
+                  <EmptyState
+                    icon={SearchX}
+                    title="No payments found"
+                    description={
+                      hasActiveFilters
+                        ? "No payments match the selected filters."
+                        : "Payments assigned to you will appear here."
+                    }
+                    actionLabel={hasActiveFilters ? "Clear filters" : null}
+                    onAction={hasActiveFilters ? handleClearFilters : null}
+                  />
                 </TableCell>
-                <TableCell>{p.notes || p.description || '-'}</TableCell>
               </TableRow>
-            ))
-          )}
-        </TableBody>
-      </Table>
+            ) : (
+              payments.map((job) => (
+                <TableRow key={job._id}>
+                  <TableCell className="font-medium">{job.service_request_id?.booking_id}</TableCell>
+                  <TableCell>{job.paid_by?.name}</TableCell>
+                  <TableCell>{job.payment_status}</TableCell>
+                  <TableCell>{job.amount}</TableCell>
+                  <TableCell>{formatDate(job.created_at)}</TableCell>
 
-      <div className="mt-4">
-        <div className="flex items-center justify-between">
-          <div className="text-sm text-gray-600">{`Showing ${payments.length} of ${totalCount} payments`}</div>
+                  {/* <TableCell>
+                    <Badge
+                      variant={
+                        job.status === "completed"
+                          ? "success"
+                          : job.status === "in-progress"
+                            ? "default"
+                            : "secondary"
+                      }
+                      className="capitalize"
+                    >
+                      {job.status}
+                    </Badge>
+                  </TableCell> */}
 
-          <Pagination className="mt-2">
-            <PaginationContent>
-              <PaginationItem>
-                <PaginationPrevious
-                  onClick={() => currentPage > 1 && handlePageChange(currentPage - 1)}
-                  className={currentPage === 1 ? 'pointer-events-none opacity-50' : ''}
+                  {/* <TableCell>
+                    {job.payment_status ? (
+                      <Badge
+                        variant={
+                          job.payment_status === "completed"
+                            ? "success"
+                            : job.payment_status === "pending"
+                              ? "secondary"
+                              : "destructive"
+                        }
+                        className="capitalize"
+                      >
+                        {job.payment.payment_status} — ₹{job.payment.amount}
+                      </Badge>
+                    ) : (
+                      <span className="text-muted-foreground">No Payment</span>
+                    )}
+                  </TableCell> */}
+                  {/* <TableCell>{formatDate(job.requested_date_time)}</TableCell>
+                  <TableCell>{formatDate(job.created_at)}</TableCell> */}
+
+
+                </TableRow>
+              ))
+            )}
+          </TableBody>
+        </Table>
+      </Card>
+
+
+
+      <DataTablePagination
+        currentPage={currentPage}
+        totalPages={totalPages}
+        itemsPerPage={itemsPerPage}
+        onPageChange={(page) => setCurrentPage(page)}
+        onItemsPerPageChange={(value) => {
+          setItemsPerPage(value);
+          setCurrentPage(1);
+        }}
+      />
+
+
+      {/* edit dialog component */}
+      {/* {selectedJob && (
+                <EditJobDialog
+                    job={selectedJob}
+                    open={editOpen}
+                    onClose={() => setEditOpen(false)}
+                    onUpdate={handleJobUpdate}
                 />
-              </PaginationItem>
+            )} */}
 
-              {[...Array(totalPages)].map((_, idx) => (
-                <PaginationItem key={idx}>
-                  <PaginationLink isActive={currentPage === idx + 1} onClick={() => handlePageChange(idx + 1)}>
-                    {idx + 1}
-                  </PaginationLink>
-                </PaginationItem>
-              ))}
 
-              <PaginationItem>
-                <PaginationNext
-                  onClick={() => currentPage < totalPages && handlePageChange(currentPage + 1)}
-                  className={currentPage === totalPages ? 'pointer-events-none opacity-50' : ''}
-                />
-              </PaginationItem>
-            </PaginationContent>
-          </Pagination>
-        </div>
-      </div>
     </div>
-  )
-}
+  );
+};
 
-export default Earnings
+
+
+
+export default Earnings;

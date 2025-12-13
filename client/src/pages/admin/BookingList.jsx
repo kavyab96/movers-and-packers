@@ -125,7 +125,7 @@ const BookingList = () => {
                             <TableHead>Tracking Status</TableHead>
                             <TableHead>Requested Date</TableHead>
                             <TableHead>Created Date</TableHead>
-                            <TableHead className="text-center">Actions</TableHead>
+                            {/* <TableHead className="text-center">Actions</TableHead> */}
                         </TableRow>
                     </TableHeader>
 
@@ -197,7 +197,7 @@ const BookingList = () => {
                                     
                                    
 
-                                    <TableCell className="text-right flex justify-end gap-2">
+                                    {/* <TableCell className="text-right flex justify-end gap-2"> */}
                                         {/* <Tooltip>
                                             <TooltipTrigger asChild>
                                                 <Button size="sm" variant="secondary" >
@@ -228,7 +228,7 @@ const BookingList = () => {
 
 
 
-                                    </TableCell>
+                                    {/* </TableCell> */}
                                 </TableRow>
                             ))
                         )}

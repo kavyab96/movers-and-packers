@@ -112,11 +112,38 @@ export const createBooking = async (req, res, next) => {
 export const getBookings = async (req, res, next) => {
     try {
         // return res.status(200).json({ message: "hi" });
+        const { page = 1, limit = 2, service_type, dateFilter = "month" } = req.query;
+        const pageNum = parseInt(page);
+        const limitNum = parseInt(limit);
+        const skip = (pageNum - 1) * limitNum;
+
         const clientId = req.user._id;
-        const { service_type } = req.query; // filter param
+
 
         // Base filter (for client)
-        const filter = { client_id: clientId };
+        const filter = {
+            client_id: clientId,
+            is_active: true
+        };
+
+        //Date filter (created_at)
+        if (dateFilter !== "all") {
+            const now = new Date();
+            let startDate;
+
+            if (dateFilter === "week") {
+                startDate = new Date();
+                startDate.setDate(now.getDate() - 7);
+            }
+
+            if (dateFilter === "month") {
+                startDate = new Date(now.getFullYear(), now.getMonth(), 1);
+            }
+
+            if (startDate) {
+                filter.created_at = { $gte: startDate };
+            }
+        }
 
         // If service_type filter exists, add it
         if (service_type) {
@@ -126,16 +153,30 @@ export const getBookings = async (req, res, next) => {
 
         // Fetch all bookings for this client
         const bookings = await ServiceRequest.find(filter)
-            .sort({ created_at: -1 })  // latest first
             // .sort({ requested_date_time: -1 })  // 
             .populate("provider_id", "name email phone")  // show provider details
             .populate("pickup_location", "name ")
             .populate("dropoff_location", "name ")
-            .populate("payment", "payment_status amount ");
+            .populate("payment", "payment_status amount ")
+            .sort({ created_at: -1 })  // latest first
+            .skip(skip)
+            .limit(limitNum);
+
+        if (!bookings || bookings.length === 0) {
+            return res.status(200).json({
+                message: "No bookings found for this user.",
+                data: []
+            });
+        }
+
+        // TOTAL COUNT (without skip/limit)
+        const total = await ServiceRequest.countDocuments(filter);
 
         return res.status(200).json({
             message: "Bookings fetched successfully",
-            total: bookings.length,
+            total,
+            currentPage: pageNum,
+            totalPages: Math.ceil(total / limitNum),
             data: bookings,
         });
     } catch (error) {

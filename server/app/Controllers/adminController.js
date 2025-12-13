@@ -37,26 +37,44 @@ exports.adminRegister = async (req, res, next) => {
 /* Get all users list (clients and providers) */
 exports.getAllUsers = async (req, res, next) => {
     try {
-        const { page = 1, limit = 5 } = req.query;
+        const { page = 1, limit = 2, search, role } = req.query;
         const pageNum = parseInt(page);
         const limitNum = parseInt(limit);
         const skip = (pageNum - 1) * limitNum;
 
-        const users = await userDb.find({
+        /*----base filter----*/
+        const filter = {
             role: { $in: ["user", "provider"] },
-            is_active: true
-        }).select('-password')
+            is_active: true,
+        };
+        /*--- Role filter------------*/
+        if (role && role !== "all") {
+            filter.role = role;
+        } else {
+            filter.role = { $in: ["user", "provider"] };
+        }
+
+        /*----search filter----*/
+        if (search) {
+            filter.$or = [
+                { name: { $regex: search, $options: "i" } },
+                { email: { $regex: search, $options: "i" } },
+                { phone: { $regex: search, $options: "i" } },
+            ];
+        }
+
+
+
+        const users = await userDb.find(filter)
+            .select('-password')
             .sort({ created_at: -1 })
             .skip(skip)
             .limit(limitNum);
 
 
         // TOTAL COUNT (without skip/limit)
-        const total = await userDb.countDocuments({
-            role: { $in: ["user", "provider"] },
-            is_active: true,
-        });
-        
+        const total = await userDb.countDocuments(filter);
+
         return res.status(200).json({
             message: "Users fetched successfully.",
             total,

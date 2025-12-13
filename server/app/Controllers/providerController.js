@@ -3,6 +3,7 @@ import User from "../Models/userModel.js";
 import ServiceRequest from "../Models/serviceRequestModel.js";
 import Payment from "../Models/paymentModel.js";
 import mongoose from "mongoose";
+import { getStartDate } from "../Utilities/dateFilters.js";
 
 
 
@@ -102,7 +103,12 @@ export const getProviders = async (req, res, next) => {
 /* Get assigned jobs for provider */
 export const getAssignedJobs = async (req, res, next) => {
     try {
-        const { page = 1, limit = 5 } = req.query;
+        const { page = 1, limit = 2,
+            createdDate = "all",
+            requestedDate = "all",
+            service_type,
+            job_status,
+        } = req.query;
 
 
         const pageNum = parseInt(page);
@@ -111,16 +117,43 @@ export const getAssignedJobs = async (req, res, next) => {
 
         const providerId = req.user._id;
 
-        // Fetch all jobs assigned to this provider
-        const jobs = await ServiceRequest.find({
+        /* ------------------ BASE FILTER ------------------ */
+        const filter = {
             provider_id: providerId,
-            is_active: true
-        })
+            is_active: true,
+        };
+
+        /* ------------------ CREATED DATE FILTER ------------------ */
+        if (createdDate !== "all") {
+            const startDate = getStartDate(createdDate);
+            if (startDate) {
+                filter.created_at = { $gte: startDate };
+            }
+        }
+
+        /* ------------------ REQUESTED DATE FILTER ------------------ */
+        if (requestedDate !== "all") {
+            const startDate = getStartDate(requestedDate);
+            if (startDate) {
+                filter.requested_date_time = { $gte: startDate };
+            }
+        }
+        /* ------------------ PAYMENT STATUS FILTER ------------------ */
+        if (job_status && job_status !== "all") {
+           filter.status = job_status;
+        }
+        /* ------------------ SERVICE TYPE FILTER ------------------ */
+        if (service_type) {
+            filter.service_type = service_type;
+        }
+
+
+        const jobs = await ServiceRequest.find(filter)
             .populate("client_id", "name email phone")
             .populate("provider_id", "name email phone")
             .populate("pickup_location", "name")
             .populate("dropoff_location", "name")
-            .populate("payment","payment_status amount ") 
+            .populate("payment", "payment_status amount ")
             .sort({ requested_date_time: -1 })
             .skip(skip)
             .limit(limitNum);
@@ -249,21 +282,21 @@ export const updateJobStatus = async (req, res, next) => {
             await booking.save();
 
             // If completed, create payment record
-                if (status === "completed") {
-                    // Create payment record if not exists
-                    const existingPayment = await Payment.findOne({
-                        service_request_id: booking._id
+            if (status === "completed") {
+                // Create payment record if not exists
+                const existingPayment = await Payment.findOne({
+                    service_request_id: booking._id
+                });
+                if (!existingPayment) {
+                    await Payment.create({
+                        service_request_id: booking._id,
+                        paid_by: booking.client_id,
+                        paid_to: booking.provider_id,
+                        amount: booking.final_cost || booking.estimated_cost,
+                        payment_status: "pending",
                     });
-                    if (!existingPayment) {
-                        await Payment.create({
-                            service_request_id: booking._id,
-                            paid_by: booking.client_id,
-                            paid_to: booking.provider_id,
-                            amount: booking.final_cost || booking.estimated_cost,
-                            payment_status: "pending",
-                        });
-                    }
                 }
+            }
             // If completed, create payment record//
 
 

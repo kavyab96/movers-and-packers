@@ -60,6 +60,10 @@ const BookingForm = ({ provider, areas, onClose }) => {
 
     }
   });
+  const watchServiceType = form.watch("service_type"); //WATCH service type
+
+  const [priceChart, setPriceChart] = useState(null);
+
 
   // AUTO CALCULATE COST
   const calculateCost = async () => {
@@ -78,6 +82,14 @@ const BookingForm = ({ provider, areas, onClose }) => {
 
       setDistanceKm(data.distance_km);
       setEstimatedCost(data.estimated_cost);
+
+      // Save the pricing breakdown from backend
+      setPriceChart({
+        base_fare: data.base_fare,
+        per_km_rate: data.per_km_rate,
+        per_sqft_rate: data.per_sqft_rate
+      });
+
 
     } catch (err) {
       console.log("Cost API Error:", err);
@@ -126,45 +138,7 @@ const BookingForm = ({ provider, areas, onClose }) => {
 
 
           <div className=" w-full grid grid-cols-1 md:grid-cols-2 gap-6 ">
-            {/* 1 Preferred date */}
-            <FormField
-              control={form.control}
-              name="requested_date_time"
-              rules={{ required: "Date is required" }}
-              render={({ field }) => (
-                <FormItem className="w-full">
-                  <FormLabel>Preferred Date</FormLabel>
-                  <Popover>
-                    <PopoverTrigger asChild>
-                      <FormControl>
-                        <Button
-                          variant="outline"
-                          className={` pl-3 text-left font-normal ${!field.value ? "text-muted-foreground" : ""
-                            }`}
-                        >
-                          {field.value ? (
-                            format(field.value, "PPP")
-                          ) : (
-                            <span>Select date</span>
-                          )}
-                          <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                        </Button>
-                      </FormControl>
-                    </PopoverTrigger>
-                    <PopoverContent>
-                      <Calendar
-                        mode="single"
-                        selected={field.value || undefined}
-                        onSelect={field.onChange}
-                        disabled={(date) => date < new Date()}
-                        initialFocus />
-                    </PopoverContent>
-                  </Popover>
 
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
 
             {/* 2 service type */}
             <FormField
@@ -233,37 +207,46 @@ const BookingForm = ({ provider, areas, onClose }) => {
 
 
             {/* 4. Dropoff Location */}
-            <FormField
-              control={form.control}
-              name="dropoff_location"
-              rules={{ required: "Drop-off location is required" }}
-              render={({ field }) => (
-                <FormItem className="w-full">
-                  <FormLabel>Drop-off Location</FormLabel>
-                  <FormControl>
-                    <Select
-                      //  onValueChange={field.onChange}
-                      onValueChange={(v) => {
-                        field.onChange(v);
-                        calculateCost();
-                      }}
-                      value={field.value}>
-                      <SelectTrigger className="w-full h-11">
-                        <SelectValue placeholder="Select drop-off location" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {areas.map(area => (
-                          <SelectItem key={area._id} value={area._id}>
-                            {area.name}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+            {/* DROPOFF ONLY IF NOT PACKING */}
+            {watchServiceType !== "packing" && (
+              <FormField
+                control={form.control}
+                name="dropoff_location"
+                // rules={{ required: "Drop-off location is required" }}
+                rules={{
+                  required:
+                    watchServiceType !== "packing"
+                      ? "Drop-off location is required"
+                      : false,
+                }}
+                render={({ field }) => (
+                  <FormItem className="w-full">
+                    <FormLabel>Drop-off Location</FormLabel>
+                    <FormControl>
+                      <Select
+                        //  onValueChange={field.onChange}
+                        onValueChange={(v) => {
+                          field.onChange(v);
+                          calculateCost();
+                        }}
+                        value={field.value}>
+                        <SelectTrigger className="w-full h-11">
+                          <SelectValue placeholder="Select drop-off location" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {areas.map(area => (
+                            <SelectItem key={area._id} value={area._id}>
+                              {area.name}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            )}
 
             {/* 5 area of sqrft */}
             <FormField
@@ -279,8 +262,49 @@ const BookingForm = ({ provider, areas, onClose }) => {
                         field.onChange(e);
                         calculateCost();
                       }}
-                      className=" h-11" />
+                      className=" h-9" />
                   </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+
+            {/* 1 Preferred date */}
+            <FormField
+              control={form.control}
+              name="requested_date_time"
+              rules={{ required: "Date is required" }}
+              render={({ field }) => (
+                <FormItem className="w-full ">
+                  <FormLabel>Preferred Date</FormLabel>
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <FormControl>
+                        <Button
+                          variant="outline"
+                          className={` pl-3 text-left font-normal ${!field.value ? "text-muted-foreground" : ""
+                            }`}
+                        >
+                          {field.value ? (
+                            format(field.value, "PPP")
+                          ) : (
+                            <span>Select date</span>
+                          )}
+                          <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                        </Button>
+                      </FormControl>
+                    </PopoverTrigger>
+                    <PopoverContent>
+                      <Calendar
+                        mode="single"
+                        selected={field.value || undefined}
+                        onSelect={field.onChange}
+                        disabled={(date) => date < new Date()}
+                        initialFocus />
+                    </PopoverContent>
+                  </Popover>
+
                   <FormMessage />
                 </FormItem>
               )}
@@ -304,6 +328,37 @@ const BookingForm = ({ provider, areas, onClose }) => {
               )}
             />
           </div>
+
+
+          {/* PRICE BREAKDOWN UI */}
+          {priceChart && (
+            <div className="border rounded-lg p-4 bg-gray-50 space-y-3 mt-4">
+
+              <h3 className="text-lg font-semibold">Price Breakdown</h3>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+
+                <div className="flex flex-col">
+                  <FormLabel>Base Fare</FormLabel>
+                  <Input disabled value={`₹ ${priceChart.base_fare}`} />
+                </div>
+
+                <div className="flex flex-col">
+                  <FormLabel>Per Sq Ft Rate</FormLabel>
+                  <Input disabled value={`₹ ${priceChart.per_sqft_rate} / sq ft`} />
+                </div>
+
+                {/* Show per km rate only if service type !== packing */}
+                {watchServiceType !== "packing" && (
+                  <div className="flex flex-col">
+                    <FormLabel>Per KM Rate</FormLabel>
+                    <Input disabled value={`₹ ${priceChart.per_km_rate} / km`} />
+                  </div>
+                )}
+
+              </div>
+            </div>
+          )}
 
 
           {/* DISTANCE + COST DISPLAY */}

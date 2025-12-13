@@ -1,6 +1,7 @@
 /* Controller to handle provider-related actions */
 import User from "../Models/userModel.js";
 import ServiceRequest from "../Models/serviceRequestModel.js";
+import Payment from "../Models/paymentModel.js";
 import mongoose from "mongoose";
 
 
@@ -119,6 +120,7 @@ export const getAssignedJobs = async (req, res, next) => {
             .populate("provider_id", "name email phone")
             .populate("pickup_location", "name")
             .populate("dropoff_location", "name")
+            .populate("payment","payment_status amount ") 
             .sort({ requested_date_time: -1 })
             .skip(skip)
             .limit(limitNum);
@@ -242,9 +244,31 @@ export const updateJobStatus = async (req, res, next) => {
             } else if (tracking_status) {
                 booking.tracking_status = tracking_status;
             }
-            
+
             booking.updated_by = providerId;
             await booking.save();
+
+            // If completed, create payment record
+                if (status === "completed") {
+                    // Create payment record if not exists
+                    const existingPayment = await Payment.findOne({
+                        service_request_id: booking._id
+                    });
+                    if (!existingPayment) {
+                        await Payment.create({
+                            service_request_id: booking._id,
+                            paid_by: booking.client_id,
+                            paid_to: booking.provider_id,
+                            amount: booking.final_cost || booking.estimated_cost,
+                            payment_status: "pending",
+                        });
+                    }
+                }
+            // If completed, create payment record//
+
+
+
+
             return res.status(200).json({
                 message: "Job status updated successfully.",
                 data: booking

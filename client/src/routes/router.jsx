@@ -15,6 +15,9 @@ import AuthRoutes from "./protected/AuthRoutes.jsx";
 
 import BookService from "../pages/client/BookService.jsx";
 import Bookings from "../pages/client/Bookings.jsx";
+import PaymentPage from "../pages/client/PaymentPage.jsx";
+import PaymentFailed from "../pages/client/PaymentFailed.jsx";
+import PaymentSuccess from "../pages/client/PaymentSuccess.jsx";
 
 import JobList from "../pages/provider/JobList.jsx";
 import Earnings from "../pages/provider/Earnings.jsx";
@@ -50,7 +53,10 @@ export const router = createBrowserRouter([
             { path: 'profile', element: <Profile /> },
             { path: 'book-service', element: <BookService /> },
             { path: 'bookings', element: <Bookings /> },
-            //   { path: '/users', element: <User /> },
+            { path: 'payment/:id', element: <PaymentPage /> },
+            { path: "payment-success", element: <PaymentSuccess/> },  
+            { path: "payment-failed", element: <PaymentFailed /> },  
+                      //   { path: '/users', element: <User /> },
             //   { path: '/admin-dashboard', element:<AdminRoute> <AdminDashboard/> </AdminRoute> },
             // { path: "*", element: <ErrorPage /> },
         ]
@@ -89,7 +95,7 @@ export const router = createBrowserRouter([
     // Only match things NOT starting with /user, /admin, or /provider
     { path: "*", element: <ErrorPage /> },
 
-    
+
 
 
 ]);

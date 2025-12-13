@@ -69,7 +69,7 @@ const JobList = () => {
 
     //edit dialog-------------
 
-    
+
 
     // Fetch jobs
     useEffect(() => {
@@ -117,6 +117,8 @@ const JobList = () => {
                             <TableHead>Pickup</TableHead>
                             <TableHead>Drop-off</TableHead>
                             <TableHead>Status</TableHead>
+                            <TableHead>Payment</TableHead>
+
                             <TableHead className="text-center">Actions</TableHead>
                         </TableRow>
                     </TableHeader>
@@ -162,6 +164,26 @@ const JobList = () => {
                                             {job.status}
                                         </Badge>
                                     </TableCell>
+
+                                    <TableCell>
+                                        {job.payment ? (
+                                            <Badge
+                                                variant={
+                                                    job.payment.payment_status === "completed"
+                                                        ? "success"
+                                                        : job.payment.payment_status === "pending"
+                                                            ? "secondary"
+                                                            : "destructive"
+                                                }
+                                                className="capitalize"
+                                            >
+                                                {job.payment.payment_status} — ₹{job.payment.amount}
+                                            </Badge>
+                                        ) : (
+                                            <span className="text-muted-foreground">No Payment</span>
+                                        )}
+                                    </TableCell>
+
 
                                     <TableCell className="text-right flex justify-end gap-2">
                                         {/* <Tooltip>

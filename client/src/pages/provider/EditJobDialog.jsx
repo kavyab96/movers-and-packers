@@ -3,7 +3,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "
 import { Button } from "@/components/ui/button";
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select";
 
-import { formatLabel , formatDate } from "@/utils/format";
+import { formatLabel, formatDate } from "@/utils/format";
 import { X } from "lucide-react";
 
 const allowedStatuses = ["accepted", "cancelled", "in-progress", "completed", "pending"];
@@ -118,7 +118,7 @@ const EditJobDialog = ({ job, open, onClose, onUpdate }) => {
 
 
 
- <Dialog open={open} onOpenChange={onClose}>
+    <Dialog open={open} onOpenChange={onClose}>
       <DialogContent className="max-w-lg">
 
         <DialogHeader>
@@ -132,7 +132,9 @@ const EditJobDialog = ({ job, open, onClose, onUpdate }) => {
             <p><span className="font-medium text-foreground">Service :</span> {formatLabel(job?.service_type)}</p>
             <p><span className="font-medium text-foreground">Requested Date :</span> {formatDate(job?.requested_date_time)}</p>
             <p><span className="font-medium text-foreground">Pickup :</span> {formatLabel(job?.pickup_location.name)}</p>
-            <p><span className="font-medium text-foreground">Drop-off :</span> {formatLabel(job?.dropoff_location.name)}</p>
+            {job.service_type !== 'packing' &&
+              <p><span className="font-medium text-foreground">Drop-off :</span> {formatLabel(job?.dropoff_location.name)}</p>
+            }
           </div>
         </DialogHeader>
 
@@ -162,7 +164,7 @@ const EditJobDialog = ({ job, open, onClose, onUpdate }) => {
             <div className="relative ">
 
               <Select value={tracking} onValueChange={setTracking}>
-                <SelectTrigger className="w-full pr-10"> 
+                <SelectTrigger className="w-full pr-10">
                   {/* Extra padding to make room for X */}
                   <SelectValue placeholder="Tracking status" />
                 </SelectTrigger>

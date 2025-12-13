@@ -13,3 +13,7 @@ export const createBookingService = (formData) => {
 export const calculateCostService = (formData) => {
   return axiosInstance.post("/client/calculate-cost", formData);
 };
+
+export const getBookingByIdService  = (id) => {
+    return axiosInstance.get(`/client/booking-detail/${id}`)
+}

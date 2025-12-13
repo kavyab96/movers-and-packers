@@ -111,6 +111,7 @@ export const createBooking = async (req, res, next) => {
 /*client getting list of own booking requests*/
 export const getBookings = async (req, res, next) => {
     try {
+        // return res.status(200).json({ message: "hi" });
         const clientId = req.user._id;
         const { service_type } = req.query; // filter param
 
@@ -125,10 +126,12 @@ export const getBookings = async (req, res, next) => {
 
         // Fetch all bookings for this client
         const bookings = await ServiceRequest.find(filter)
-            .sort({ requested_date_time: -1 })  // latest first
+            .sort({ created_at: -1 })  // latest first
+            // .sort({ requested_date_time: -1 })  // 
             .populate("provider_id", "name email phone")  // show provider details
             .populate("pickup_location", "name ")
-            .populate("dropoff_location", "name ");
+            .populate("dropoff_location", "name ")
+            .populate("payment", "payment_status amount ");
 
         return res.status(200).json({
             message: "Bookings fetched successfully",
@@ -150,7 +153,8 @@ export const bookingDetails = async (req, res, next) => {
         // 1️ Find the booking
         const booking = await ServiceRequest.findById(bookingId)
             .populate("provider_id", "name email phone")
-            .populate("client_id", "name email phone");
+            .populate("client_id", "name email phone")
+            .populate("payment", "payment_status amount ");
 
         // 2️ Check if booking exists and belongs to this client
         if (!booking || booking.client_id._id.toString() !== clientId.toString()) {
@@ -220,8 +224,8 @@ export const cancelBooking = async (req, res, next) => {
     }
 }
 
-/*cost*/
 
+/*estimated cost and km calculation on booking form*/
 
 export const calculateCost = async (req, res) => {
     try {

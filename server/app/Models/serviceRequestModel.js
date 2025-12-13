@@ -140,4 +140,17 @@ serviceRequestSchema.pre("save", async function (next) {
   next();
 });
 
+
+/* -----------VIRTUAL POPULATE------------------*/
+serviceRequestSchema.virtual("payment", {
+    ref: "Payment",                      // Model to populate
+    localField: "_id",                   // Value from ServiceRequest._id
+    foreignField: "service_request_id",  // Match Payment.service_request_id
+    justOne: true                         // One payment per booking
+});
+// Enable virtual fields in JSON/output
+serviceRequestSchema.set("toJSON", { virtuals: true });
+serviceRequestSchema.set("toObject", { virtuals: true });
+/* ----------------------------------------- */
+
 module.exports = mongoose.model("ServiceRequest", serviceRequestSchema);

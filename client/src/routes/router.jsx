@@ -26,6 +26,10 @@ import UsersList from "../pages/admin/UsersList.jsx";
 import BookingList from "../pages/admin/BookingList.jsx";
 import ServiceAreasList from "../pages/admin/ServiceAreasList.jsx";
 
+import RoleRoute from "./protected/RoleRoutes.jsx";
+import Unauthorized from "../pages/shared/Unauthorized.jsx";
+
+
 
 export const router = createBrowserRouter([
     {
@@ -47,24 +51,36 @@ export const router = createBrowserRouter([
 
     {
         path: "/user",
-        element: <AuthRoutes> <AuthUserLayout /> </AuthRoutes>,
+        element: (
+            <AuthRoutes>
+                <RoleRoute allowedRoles={["user"]}>
+                    <AuthUserLayout />
+                </RoleRoute>
+            </AuthRoutes>
+        ),
         children: [
             { path: 'dashboard', element: <Dashboard /> },
             { path: 'profile', element: <Profile /> },
             { path: 'book-service', element: <BookService /> },
             { path: 'bookings', element: <Bookings /> },
             { path: 'payment/:id', element: <PaymentPage /> },
-            { path: "payment-success", element: <PaymentSuccess/> },  
-            { path: "payment-failed", element: <PaymentFailed /> },  
-                      //   { path: '/users', element: <User /> },
+            { path: "payment-success", element: <PaymentSuccess /> },
+            { path: "payment-failed", element: <PaymentFailed /> },
+            //   { path: '/users', element: <User /> },
             //   { path: '/admin-dashboard', element:<AdminRoute> <AdminDashboard/> </AdminRoute> },
             // { path: "*", element: <ErrorPage /> },
         ]
     },
     {
         path: "/admin",
-        element: <AuthRoutes> <AuthUserLayout /> </AuthRoutes>,
-        errorElement: <ErrorPage />,
+        element: (
+            <AuthRoutes>
+                <RoleRoute allowedRoles={["admin"]}>
+                    <AuthUserLayout />
+                </RoleRoute>
+            </AuthRoutes>
+        ),
+        errorElement: < ErrorPage />,
         children: [
             { path: 'dashboard', element: <Dashboard /> },
             { path: 'users', element: <UsersList /> },
@@ -79,7 +95,13 @@ export const router = createBrowserRouter([
     },
     {
         path: "/provider",
-        element: <AuthRoutes> <AuthUserLayout /> </AuthRoutes>,
+        element: (
+            <AuthRoutes>
+                <RoleRoute allowedRoles={["provider"]}>
+                    <AuthUserLayout />
+                </RoleRoute>
+            </AuthRoutes>
+        ),
         children: [
             { path: 'dashboard', element: <Dashboard /> },
             { path: 'jobs', element: <JobList /> },
@@ -89,6 +111,12 @@ export const router = createBrowserRouter([
             //   { path: '/admin-dashboard', element:<AdminRoute> <AdminDashboard/> </AdminRoute> },
             { path: "*", element: <ErrorPage /> },
         ]
+    },
+
+    /* ───────── UNAUTHORIZED PAGE ───────── */
+    {
+        path: "/unauthorized",
+        element: <Unauthorized />,
     },
 
     // FINAL GLOBAL CATCH-ALL (OPTIONAL)

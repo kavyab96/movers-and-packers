@@ -10,10 +10,25 @@ export const searchProviders = (query) => {
     });
 };
 
+//update profile pic
+export const profilePicUpdateService = (id , formData) => {
+  return axiosInstance.put(`/users/me/profile-pic/${id}`, formData,
+    {
+      headers: { "Content-Type": "multipart/form-data" }
+    },
+  )
+}
+
+//update profile info
+export const updateProfileInfoService =(id,formData)=>{
+   return axiosInstance.put(`/users/me/${id}`, formData)
+}
+
 //client-----------------------------------------------------
 export const getUserBookingsService = (query) => {
-  return axiosInstance.get("/client/bookings",{
-      params: query
-    });
+  return axiosInstance.get("/client/bookings", {
+    params: query
+  });
 };
+
 //client-----------------------------------------------------

@@ -1,5 +1,6 @@
 const mongoose = require("mongoose");
 const masterSchema = require("./masterModel");
+const Counter = require("./counterModel");
 
 const serviceRequestSchema = new mongoose.Schema(
   {
@@ -37,13 +38,15 @@ const serviceRequestSchema = new mongoose.Schema(
     },
 
     pickup_location: {
-      type: String,
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Area",
       required: true,
       trim: true,
     },
 
     dropoff_location: {
-      type: String,
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Area",
       required: function () {
         return this.service_type !== "packing";// moving / both require dropoff
       },
@@ -102,11 +105,52 @@ const serviceRequestSchema = new mongoose.Schema(
       trim: true,
     },
 
+    booking_id: {
+      type: String,
+      unique: true,
+      trim: true,
+    },
+
+    distance_km: {
+      type: Number,
+      default: null,
+    },
+
+
   },
   { timestamps: false } // We are using our own custom timestamps from masterSchema
 );
 
 // Add common master fields: created_at, updated_at, updated_by, is_active
 serviceRequestSchema.add(masterSchema);
+
+
+// AUTO-GENERATE UNIQUE  booking id //
+serviceRequestSchema.pre("save", async function (next) {
+  if (this.isNew) {
+    const counter = await Counter.findOneAndUpdate(
+      { name: "serviceRequest" },
+      { $inc: { value: 1 } },
+      { new: true, upsert: true }
+    );
+
+    const num = counter.value.toString().padStart(6, "0");
+    this.booking_id = `SR-${num}`;
+  }
+  next();
+});
+
+
+/* -----------VIRTUAL POPULATE------------------*/
+serviceRequestSchema.virtual("payment", {
+    ref: "Payment",                      // Model to populate
+    localField: "_id",                   // Value from ServiceRequest._id
+    foreignField: "service_request_id",  // Match Payment.service_request_id
+    justOne: true                         // One payment per booking
+});
+// Enable virtual fields in JSON/output
+serviceRequestSchema.set("toJSON", { virtuals: true });
+serviceRequestSchema.set("toObject", { virtuals: true });
+/* ----------------------------------------- */
 
 module.exports = mongoose.model("ServiceRequest", serviceRequestSchema);

@@ -6,18 +6,24 @@ export const userSlice = createSlice({
     user: {}
   },
   reducers: {
-    saveUser: (state,action) => {
-        state.user = action.payload
+    saveUser: (state, action) => {
+      state.user = action.payload
     },
     //clear state variable when logout
     clearUser: (state) => {
-      state.user ={}
+      state.user = {}
     },
-    
+
+    updateProfilePic: (state, action) => {
+      if (state.user) {
+        state.user.profile_pic = action.payload;
+      }
+    }
+
   }
 })
 
 // Action creators are generated for each case reducer function
-export const { saveUser,clearUser } = userSlice.actions
+export const { saveUser, clearUser,updateProfilePic } = userSlice.actions
 
 export default userSlice.reducer

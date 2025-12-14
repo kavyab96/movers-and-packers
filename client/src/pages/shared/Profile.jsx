@@ -1,13 +1,66 @@
-import React from "react";
-import { useSelector } from "react-redux";
+import React, { useRef, useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
-import { User, Mail, Phone, MapPin, BadgeCheck } from "lucide-react";
+import { Edit3, BadgeCheck } from "lucide-react";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
+import { Separator } from "@/components/ui/separator"
+
+import { toast } from "sonner";
+import { profilePicUpdateService } from "../../services/userServices";
+import FullPageLoader from "../../components/loaders/FullPageLoader";
+import { updateProfilePic } from "../../redux/features/userSlice"
+import ProfileInfoCard from "./ProfileInfoCard";
+import { useAreas } from "../../context/AreaContext";
+
 
 const Profile = () => {
+  const dispatch = useDispatch()
   const user = useSelector((state) => state.user.user);
 
+  const { areas } = useAreas();
+
+  // Generate initials if no image
+  const initials = user?.name
+    ? user.name.split(" ").map((n) => n[0]).join("").toUpperCase()
+    : "U";
+
+
+  const [loading, setLoading] = useState(false);
+  const fileInputRef = useRef(null);
+
+  // Handle file selection
+  const handleImageChange = async (e) => {
+    try {
+      setLoading(true)
+      const file = e.target.files[0];
+      if (!file) return;
+
+      // TODO: API Upload Image
+      const formData = new FormData();
+      formData.append("image", file);
+      const res = await profilePicUpdateService(user._id, formData)
+
+      const newPic = res.data.data.profile_pic;  // New profile picture returned from server
+      dispatch(updateProfilePic(newPic));  // Update Redux store
+
+      toast.success("Profile picture updated!");
+    } catch (error) {
+      if (error.response?.status === 400) {
+        toast.error(error.response.data.error || "Profile picture updating failed");
+      } else {
+        toast.error("Something went wrong. Please try again.");
+      }
+      // console.log(error);
+    }
+    finally {
+      setLoading(false);
+    }
+
+  };
+
   return (
-    <div className="max-w-2xl mx-auto space-y-6">
+    <div className=" max-w-6xl mx-auto space-y-8 w-full">
+      {loading && <FullPageLoader />}
 
       {/* Page Title */}
       <h1 className="text-2xl font-bold tracking-tight">My Profile</h1>
@@ -15,61 +68,67 @@ const Profile = () => {
         View and manage your TransitBee account details.
       </p>
 
-      {/* USER DETAILS CARD */}
-      <Card className="shadow-sm border">
-        <CardHeader>
-          <CardTitle className="text-lg font-semibold">Personal Information</CardTitle>
-        </CardHeader>
+      <div className=" w-full grid grid-cols-1 md:grid-cols-3 gap-6 items-stretch ">
+        {/* PROFILE HEADER CARD */}
+        <Card className="border shadow-sm md:col-span-1 h-full">
+          <CardContent className="flex flex-col items-center gap-6 py-8">
+            {/* Avatar */}
 
-        <CardContent className="space-y-4">
+            {/* Hidden input */}
+            <input
+              type="file"
+              ref={fileInputRef}
+              accept="image/*"
+              className="hidden"
+              onChange={handleImageChange}
+            />
 
-          {/* Name */}
-          <div className="flex items-center gap-4">
-            <User className="h-5 w-5 text-primary" />
-            <div>
-              <p className="text-sm text-muted-foreground">Name</p>
-              <p className="text-base font-medium">{user?.name || "-"}</p>
+            <div className="relative">
+              <Avatar className="h-28 w-28 border">
+                <AvatarImage src={user?.profile_pic} alt={user?.name} />
+                <AvatarFallback className="text-2xl font-semibold">
+                  {initials}
+                </AvatarFallback>
+              </Avatar>
+
+              <button
+                onClick={() => fileInputRef.current?.click()}
+                className="absolute bottom-1 right-1 h-8 w-8 flex items-center justify-center
+                   bg-primary text-white rounded-full shadow hover:bg-primary/90"
+              >
+
+                <Edit3 className="h-4 w-4" />
+
+              </button>
             </div>
-          </div>
 
-          {/* Email */}
-          <div className="flex items-center gap-4">
-            <Mail className="h-5 w-5 text-primary" />
-            <div>
-              <p className="text-sm text-muted-foreground">Email</p>
-              <p className="text-base font-medium">{user?.email || "-"}</p>
+
+            <Separator className="my-2" />
+            {/* Name & Email */}
+            <div className="space-y-1 text-center md:text-left w-full">
+              <h2 className="text-2xl font-semibold">{user?.name || "Unnamed User"}</h2>
+
+              <div className="flex r gap-2 mt-2">
+                <BadgeCheck className="h-4 w-4 text-primary" />
+                <span className="text-sm font-medium capitalize text-primary">
+                  {user?.role}
+                </span>
+              </div>
+
+              <p className="text-muted-foreground">{user?.email || "-"}</p>
             </div>
-          </div>
 
-          {/* Phone */}
-          <div className="flex items-center gap-4">
-            <Phone className="h-5 w-5 text-primary" />
-            <div>
-              <p className="text-sm text-muted-foreground">Phone</p>
-              <p className="text-base font-medium">{user?.phone || "-"}</p>
-            </div>
-          </div>
 
-          {/* Address */}
-          <div className="flex items-center gap-4">
-            <MapPin className="h-5 w-5 text-primary" />
-            <div>
-              <p className="text-sm text-muted-foreground">Address</p>
-              <p className="text-base font-medium">{user?.address || "-"}</p>
-            </div>
-          </div>
+          </CardContent>
+        </Card>
 
-          {/* Role */}
-          <div className="flex items-center gap-4">
-            <BadgeCheck className="h-5 w-5 text-primary" />
-            <div>
-              <p className="text-sm text-muted-foreground">Role</p>
-              <p className="text-base font-medium capitalize">{user?.role || "-"}</p>
-            </div>
-          </div>
+        {/* USER DETAILS CARD */}
+        <div className="md:col-span-2 h-full">
+          <ProfileInfoCard user={user} areas={areas} />
+        </div>
 
-        </CardContent>
-      </Card>
+
+      </div>
 
     </div>
   );

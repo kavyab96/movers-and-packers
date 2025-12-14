@@ -1,5 +1,5 @@
 const userRouter = require("express").Router();
-const { getUserProfile, updateUserProfile } = require("../../Controllers/userController");
+const { getUserProfile, updateUserProfile,updateUserProfilePic } = require("../../Controllers/userController");
 const authMiddleware = require("../../Middleware/authMiddleware");
 const roleMiddleware = require("../../Middleware/roleMiddleware");
 const upload = require("../../Middleware/multer");
@@ -13,8 +13,15 @@ userRouter.get("/me", authMiddleware,roleMiddleware(['user','provider']),getUser
 userRouter.put("/me/:id",
     authMiddleware,
     roleMiddleware(['user','provider']),
-    upload.single("image"),
     updateUserProfile
+); 
+
+/*auth user updation procile_pic only*/
+userRouter.put("/me/profile-pic/:id",
+    authMiddleware,
+    roleMiddleware(['user','provider']),
+    upload.single("image"),
+    updateUserProfilePic
 ); 
 
 //

@@ -15,6 +15,20 @@ import AuthRoutes from "./protected/AuthRoutes.jsx";
 
 import BookService from "../pages/client/BookService.jsx";
 import Bookings from "../pages/client/Bookings.jsx";
+import PaymentPage from "../pages/client/PaymentPage.jsx";
+import PaymentFailed from "../pages/client/PaymentFailed.jsx";
+import PaymentSuccess from "../pages/client/PaymentSuccess.jsx";
+
+import JobList from "../pages/provider/JobList.jsx";
+import Earnings from "../pages/provider/Earnings.jsx";
+
+import UsersList from "../pages/admin/UsersList.jsx";
+import BookingList from "../pages/admin/BookingList.jsx";
+import ServiceAreasList from "../pages/admin/ServiceAreasList.jsx";
+
+import RoleRoute from "./protected/RoleRoutes.jsx";
+import Unauthorized from "../pages/shared/Unauthorized.jsx";
+
 
 
 export const router = createBrowserRouter([
@@ -37,12 +51,21 @@ export const router = createBrowserRouter([
 
     {
         path: "/user",
-        element: <AuthRoutes> <AuthUserLayout /> </AuthRoutes>,
+        element: (
+            <AuthRoutes>
+                <RoleRoute allowedRoles={["user"]}>
+                    <AuthUserLayout />
+                </RoleRoute>
+            </AuthRoutes>
+        ),
         children: [
             { path: 'dashboard', element: <Dashboard /> },
             { path: 'profile', element: <Profile /> },
             { path: 'book-service', element: <BookService /> },
             { path: 'bookings', element: <Bookings /> },
+            { path: 'payment/:id', element: <PaymentPage /> },
+            { path: "payment-success", element: <PaymentSuccess /> },
+            { path: "payment-failed", element: <PaymentFailed /> },
             //   { path: '/users', element: <User /> },
             //   { path: '/admin-dashboard', element:<AdminRoute> <AdminDashboard/> </AdminRoute> },
             // { path: "*", element: <ErrorPage /> },
@@ -50,10 +73,19 @@ export const router = createBrowserRouter([
     },
     {
         path: "/admin",
-        element: <AuthRoutes> <AuthUserLayout /> </AuthRoutes>,
-        errorElement: <ErrorPage />,
+        element: (
+            <AuthRoutes>
+                <RoleRoute allowedRoles={["admin"]}>
+                    <AuthUserLayout />
+                </RoleRoute>
+            </AuthRoutes>
+        ),
+        errorElement: < ErrorPage />,
         children: [
             { path: 'dashboard', element: <Dashboard /> },
+            { path: 'users', element: <UsersList /> },
+            { path: 'service-requests', element: <BookingList /> },
+            { path: 'service-areas', element: <ServiceAreasList /> },
             { path: 'profile', element: <Profile /> },
             { path: "*", element: <ErrorPage /> },
             //   { path: '/users', element: <User /> },
@@ -63,21 +95,35 @@ export const router = createBrowserRouter([
     },
     {
         path: "/provider",
-        element: <AuthRoutes> <AuthUserLayout /> </AuthRoutes>,
+        element: (
+            <AuthRoutes>
+                <RoleRoute allowedRoles={["provider"]}>
+                    <AuthUserLayout />
+                </RoleRoute>
+            </AuthRoutes>
+        ),
         children: [
             { path: 'dashboard', element: <Dashboard /> },
+            { path: 'jobs', element: <JobList /> },
             { path: 'profile', element: <Profile /> },
+            { path: 'earnings', element: <Earnings /> },
             //   { path: '/users', element: <User /> },
             //   { path: '/admin-dashboard', element:<AdminRoute> <AdminDashboard/> </AdminRoute> },
             { path: "*", element: <ErrorPage /> },
         ]
     },
 
+    /* ───────── UNAUTHORIZED PAGE ───────── */
+    {
+        path: "/unauthorized",
+        element: <Unauthorized />,
+    },
+
     // FINAL GLOBAL CATCH-ALL (OPTIONAL)
     // Only match things NOT starting with /user, /admin, or /provider
     { path: "*", element: <ErrorPage /> },
 
-    
+
 
 
 ]);

@@ -1,11 +1,14 @@
 
 import mongoose from "mongoose";
 import ServiceRequest from "../Models/serviceRequestModel.js";
+import { getDistanceInKm } from "../Utilities/distance.js";
+
+import ServiceArea from "../Models/serviceAreaModel.js";
+import PriceChart from "../Models/priceChartModel.js";
 
 /*client creating booking request*/
 export const createBooking = async (req, res, next) => {
     try {
-
 
         const {
             client_id,
@@ -16,13 +19,34 @@ export const createBooking = async (req, res, next) => {
             area_in_square_feet,
             notes,
             requested_date_time,
+            distance_km,
+            estimated_cost,
         } = req.body;
 
         if (!client_id || !provider_id || !service_type || !pickup_location || !area_in_square_feet) {
             return res.status(400).json({
-                message:
+                error:
                     "client_id, provider_id, service_type, pickup_location and area_in_square_feet are required.",
             });
+        }
+
+
+        // PACKING: only estimated_cost is required
+        if (service_type === "packing") {
+            if (!estimated_cost) {
+                return res.status(400).json({
+                    error: "Estimated cost is required for packing service.",
+                });
+            }
+        }
+
+        // MOVING or BOTH: distance + estimated cost required
+        if (service_type !== "packing") {
+            if (!distance_km || !estimated_cost) {
+                return res.status(400).json({
+                    error: "Distance and estimated cost are required for moving or combined services.",
+                });
+            }
         }
 
 
@@ -43,7 +67,7 @@ export const createBooking = async (req, res, next) => {
 
         if (existingBooking) {
             return res.status(400).json({
-                message:
+                error:
                     "A booking already exists with the same service type, provider, and date. Please choose another date.",
             });
         }
@@ -64,6 +88,9 @@ export const createBooking = async (req, res, next) => {
             notes: notes || null,
             status: "pending",      // client just created booking
             updated_by: client_id,  // initially, the client triggered this
+
+            distance_km: service_type === "packing" ? 0 : Number(distance_km),
+            estimated_cost: Number(estimated_cost),
         };
 
         //Save to DB
@@ -84,11 +111,39 @@ export const createBooking = async (req, res, next) => {
 /*client getting list of own booking requests*/
 export const getBookings = async (req, res, next) => {
     try {
+        // return res.status(200).json({ message: "hi" });
+        const { page = 1, limit = 2, service_type, dateFilter = "month" } = req.query;
+        const pageNum = parseInt(page);
+        const limitNum = parseInt(limit);
+        const skip = (pageNum - 1) * limitNum;
+
         const clientId = req.user._id;
-        const { service_type } = req.query; // filter param
+
 
         // Base filter (for client)
-        const filter = { client_id: clientId };
+        const filter = {
+            client_id: clientId,
+            is_active: true
+        };
+
+        //Date filter (created_at)
+        if (dateFilter !== "all") {
+            const now = new Date();
+            let startDate;
+
+            if (dateFilter === "week") {
+                startDate = new Date();
+                startDate.setDate(now.getDate() - 7);
+            }
+
+            if (dateFilter === "month") {
+                startDate = new Date(now.getFullYear(), now.getMonth(), 1);
+            }
+
+            if (startDate) {
+                filter.created_at = { $gte: startDate };
+            }
+        }
 
         // If service_type filter exists, add it
         if (service_type) {
@@ -98,13 +153,30 @@ export const getBookings = async (req, res, next) => {
 
         // Fetch all bookings for this client
         const bookings = await ServiceRequest.find(filter)
-            .sort({ requested_date_time: -1 })  // latest first
+            // .sort({ requested_date_time: -1 })  // 
             .populate("provider_id", "name email phone")  // show provider details
-            .populate("client_id", "name email phone");   // optional
+            .populate("pickup_location", "name ")
+            .populate("dropoff_location", "name ")
+            .populate("payment", "payment_status amount ")
+            .sort({ created_at: -1 })  // latest first
+            .skip(skip)
+            .limit(limitNum);
+
+        if (!bookings || bookings.length === 0) {
+            return res.status(200).json({
+                message: "No bookings found for this user.",
+                data: []
+            });
+        }
+
+        // TOTAL COUNT (without skip/limit)
+        const total = await ServiceRequest.countDocuments(filter);
 
         return res.status(200).json({
             message: "Bookings fetched successfully",
-            total: bookings.length,
+            total,
+            currentPage: pageNum,
+            totalPages: Math.ceil(total / limitNum),
             data: bookings,
         });
     } catch (error) {
@@ -122,7 +194,8 @@ export const bookingDetails = async (req, res, next) => {
         // 1️ Find the booking
         const booking = await ServiceRequest.findById(bookingId)
             .populate("provider_id", "name email phone")
-            .populate("client_id", "name email phone");
+            .populate("client_id", "name email phone")
+            .populate("payment", "payment_status amount ");
 
         // 2️ Check if booking exists and belongs to this client
         if (!booking || booking.client_id._id.toString() !== clientId.toString()) {
@@ -191,5 +264,61 @@ export const cancelBooking = async (req, res, next) => {
         next(error);
     }
 }
+
+
+/*estimated cost and km calculation on booking form*/
+
+export const calculateCost = async (req, res) => {
+    try {
+        //691dc2fc84ba30eb20c5d531//ett
+
+        //691dbe3b6dcd9e8727894aa3 //ktm
+        const { pickup_location, dropoff_location, area_in_square_feet, service_type } = req.body;
+
+        if (!pickup_location || !area_in_square_feet) {
+            return res.status(400).json({ error: "Pickup, area, service type required" });
+        }
+
+        const pickup = await ServiceArea.findById(pickup_location);
+        const dropoff = dropoff_location ? await ServiceArea.findById(dropoff_location) : null;
+
+
+
+        if (!pickup) return res.status(400).json({ error: "Invalid pickup location" });
+        if (service_type !== "packing" && !dropoff)
+            return res.status(400).json({ error: "Dropoff required for moving/both" });
+
+        let distance_km = 0;
+
+        if (service_type !== "packing") {
+            distance_km = await getDistanceInKm(
+                { lat: pickup.latitude, lng: pickup.longitude },
+                { lat: dropoff.latitude, lng: dropoff.longitude }
+            );
+        }
+        // return res.status(200).json({distance_km:distance_km})
+
+        const price = await PriceChart.findOne();
+        if (!price) return res.status(500).json({ error: "Pricing chart missing" });
+
+        const estimated_cost =
+            price.base_fare +
+            distance_km * price.per_km_rate +
+            area_in_square_feet * price.per_sqft_rate;
+
+        return res.json({
+            base_fare: price.base_fare,
+            per_km_rate: price.per_km_rate,
+            per_sqft_rate: price.per_sqft_rate,
+            distance_km,
+            estimated_cost: Math.round(estimated_cost),
+        });
+
+    } catch (err) {
+        return res.status(500).json({ error: "Server error", details: err.message });
+    }
+};
+
+
 
 

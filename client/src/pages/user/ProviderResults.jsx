@@ -42,7 +42,7 @@ const ProviderResults = () => {
 
     return (
         <div className="max-w-4xl mx-auto p-5 space-y-4">
-            <h2 className="text-2xl font-semibold mb-5">
+            <h2 className="text-2xl font-semibold my-10">
                 Available Providers
             </h2>
 
@@ -53,7 +53,7 @@ const ProviderResults = () => {
                     <p>No providers found for your search.</p>
                 )
                 : (
-                    <>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                         {providers.map((item) => (
                             <ProviderCard
                                 key={item._id}
@@ -61,7 +61,7 @@ const ProviderResults = () => {
 
                             />
                         ))}
-                    </>
+                    </div>
 
 
                 )

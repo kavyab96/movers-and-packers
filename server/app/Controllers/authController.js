@@ -46,7 +46,13 @@ exports.userRegister = async (req, res, next) => {
       if (saved) {
          // jwt token generation
          const token = await createToken(saved._id);
-         res.cookie("token", token)
+         // res.cookie("token", token)
+         res.cookie("token", token, {
+            httpOnly: true,
+            secure: true,        // REQUIRED for HTTPS
+            sameSite: "none",    // REQUIRED for cross-domain
+         })
+
          // jwt token generation
 
          return res.status(201).json({
@@ -75,8 +81,8 @@ exports.login = async (req, res, next) => {
    try {
       const { email, password } = req.body;
       const userExists = await userDb.findOne({ email })
-      .populate("service_areas", "name _id"); 
-      
+         .populate("service_areas", "name _id");
+
       if (!userExists) {
          return res.status(400).json({ error: "Invalid email" });
       }
@@ -89,7 +95,13 @@ exports.login = async (req, res, next) => {
 
       // jwt token generation
       const token = await createToken(userExists._id);
-      res.cookie("token", token)
+      // res.cookie("token", token)
+      res.cookie("token", token, {
+         httpOnly: true,
+         secure: true,        // REQUIRED for HTTPS
+         sameSite: "none",    // REQUIRED for cross-domain
+      })
+
       // jwt token generation
 
       return res.status(200).json({ message: "User logged in successfully", userExists });

@@ -67,7 +67,7 @@ export const getProviders = async (req, res, next) => {
                 path: "service_areas",
                 select: "name"
             })
-            .select("name email phone service_areas is_active")
+            .select("name email phone service_areas is_active ")
             .skip(skip)
             .limit(limitNum);
 

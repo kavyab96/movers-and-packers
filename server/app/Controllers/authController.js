@@ -50,7 +50,8 @@ exports.userRegister = async (req, res, next) => {
          res.cookie("token", token, {
             httpOnly: true,
             secure: true,        // REQUIRED for HTTPS
-            sameSite: "none",    // REQUIRED for cross-domain
+            sameSite: "None",    // REQUIRED for cross-domain
+            path: "/",
          })
 
          // jwt token generation
@@ -99,7 +100,8 @@ exports.login = async (req, res, next) => {
       res.cookie("token", token, {
          httpOnly: true,
          secure: true,        // REQUIRED for HTTPS
-         sameSite: "none",    // REQUIRED for cross-domain
+         sameSite: "None",    // REQUIRED for cross-domain
+         path: "/",
       })
 
       // jwt token generation

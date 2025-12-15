@@ -51,3 +51,8 @@ export const getProviderKycService = (providerId) => {
     `/admin/provider-kyc/${providerId}`
   );
 };
+
+/*verify each kyc doc of provider*/
+export const verifyKycDocumentService = (docId, status) => {
+  return axiosInstance.patch(`/admin/verify-kyc-doc/${docId}`, { status });
+};

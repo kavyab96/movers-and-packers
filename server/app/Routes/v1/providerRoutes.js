@@ -1,7 +1,7 @@
 const providerRouter = require("express").Router();
 const { getPayments } = require("../../Controllers/paymentController");
 const { getProviders, getAssignedJobs, updateJobStatus,dashboardStats } = require("../../Controllers/providerController");
-const { getKycDocuments,uploadKycDocuments } = require("../../Controllers/kycDocumentController");
+const { getKycDocuments,uploadKycDocuments ,deleteKycDocuments } = require("../../Controllers/kycDocumentController");
 const authMiddleware = require("../../Middleware/authMiddleware");
 const roleMiddleware = require("../../Middleware/roleMiddleware");
 const upload = require("../../Middleware/multer");
@@ -38,6 +38,8 @@ providerRouter.get("/get-payments", authMiddleware, roleMiddleware(['provider'])
 
 //View uploaded KYC documents
 providerRouter.get("/get-kyc-documents", authMiddleware, roleMiddleware(['provider']), getKycDocuments);
+
+providerRouter.put("/delete-kyc-document/:id", authMiddleware, roleMiddleware(['provider']), deleteKycDocuments);
 
 //Upload or update KYC documents
 providerRouter.put("/upload-kyc-documents",

@@ -55,16 +55,21 @@ const DataTablePagination = ({
     disabled = false,
 }) => {
 
- const pages = getPaginationRange(currentPage, totalPages);
+    const pages = getPaginationRange(currentPage, totalPages);
 
     return (
-        <div className="flex items-center justify-between mt-4 w-full">
+        // <div className="flex items-center justify-between mt-4 w-full">
+        <div className="
+            mt-4 w-full
+            flex flex-col gap-3
+            sm:flex-row sm:items-center sm:justify-between
+            ">
 
 
 
             {/* Pagination */}
-            <Pagination className="w-50">
-                <PaginationContent>
+            <Pagination className="w-full sm:w-auto flex justify-center">
+                <PaginationContent className="flex flex-wrap justify-center">
                     <PaginationItem>
                         <PaginationPrevious
                             onClick={() => !disabled && currentPage > 1 && onPageChange(currentPage - 1)}
@@ -113,15 +118,15 @@ const DataTablePagination = ({
 
 
             {/* Items per page */}
-            <div className="flex items-center gap-3">
-                <span className="text-sm text-muted-foreground ">Rows per page:</span>
+            <div className="flex items-center justify-center sm:justify-end gap-2">
+                <span className="text-sm sm:text-sm text-muted-foreground ">Rows per page:</span>
 
                 <Select
                     disabled={disabled}
                     value={String(itemsPerPage)}
                     onValueChange={(value) => onItemsPerPageChange(Number(value))}
                 >
-                    <SelectTrigger className="w-20">
+                    <SelectTrigger className="w-20 h-8 sm:h-9">
                         <SelectValue />
                     </SelectTrigger>
                     <SelectContent>

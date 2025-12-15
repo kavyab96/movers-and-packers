@@ -13,10 +13,16 @@ import {
   SelectContent,
   SelectItem,
 } from "@/components/ui/select";
-import { UploadCloud, XCircle, FileText } from "lucide-react";
+import { UploadCloud, XCircle, FileText, CircleMinus } from "lucide-react";
 import { toast } from "sonner";
 
-import { uploadKycService } from "../../services/providerServices";
+import {
+  Tooltip,
+  TooltipTrigger,
+  TooltipContent,
+} from "@/components/ui/tooltip";
+
+import { uploadKycService, deleteKycDocumentService } from "../../services/providerServices";
 
 const ProviderKycCard = ({ user, kycDocs = [], refreshKycDocs }) => {
   const fileInputRef = useRef(null);
@@ -70,6 +76,27 @@ const ProviderKycCard = ({ user, kycDocs = [], refreshKycDocs }) => {
   };
 
 
+  const handleDeleteKyc = async (docId) => {
+    const confirmDelete = window.confirm(
+      "Are you sure you want to delete this KYC document?"
+    );
+
+    if (!confirmDelete) return;
+
+    try {
+      await deleteKycDocumentService(docId);
+      toast.success("KYC document deleted successfully");
+
+      refreshKycDocs && refreshKycDocs();
+    } catch (error) {
+      toast.error(
+        error.response?.data?.message || "Failed to delete document"
+      );
+    }
+  };
+
+
+
 
   return (
     <Card className="max-w-7xl mx-auto">
@@ -80,28 +107,6 @@ const ProviderKycCard = ({ user, kycDocs = [], refreshKycDocs }) => {
       <CardContent className="space-y-4 ">
         <div className="grid grid-cols-1 md:grid-cols-12 gap-6 items-end">
 
-          {/*  Document Type Dropdown */}
-          {/* <div className="md:col-span-4">
-            <label className="text-sm font-medium mb-1 block">
-              Document Type
-            </label>
-            <Select
-              value={documentType}
-              onValueChange={setDocumentType}
-            >
-              <SelectTrigger className="w-full">
-                <SelectValue placeholder="Select document type" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="aadhar">Aadhar Card</SelectItem>
-                <SelectItem value="pan">PAN Card</SelectItem>
-                <SelectItem value="license">Driving License</SelectItem>
-                <SelectItem value="voter_id">Voter ID</SelectItem>
-                <SelectItem value="passport">Passport</SelectItem>
-                <SelectItem value="other">Other</SelectItem>
-              </SelectContent>
-            </Select>
-          </div> */}
 
           <div className="md:col-span-4">
             <label className="text-sm font-medium mb-1 block">
@@ -143,7 +148,7 @@ const ProviderKycCard = ({ user, kycDocs = [], refreshKycDocs }) => {
 
 
           {/* 📎 File Upload */}
-          <div className="md:col-span-5">
+          <div className="md:col-span-4">
             <label className="text-sm font-medium mb-1 block">
               Upload Document
             </label>
@@ -186,7 +191,7 @@ const ProviderKycCard = ({ user, kycDocs = [], refreshKycDocs }) => {
 
           {/*  Upload Button */}
           <Button
-            className="w-full md:col-span-3 bg-linear-to-r from-green-200 to-sky-400 opacity-70 hover:opacity-100"
+            className="w-full md:col-span-4 bg-linear-to-r from-green-200 to-sky-400 opacity-70 hover:opacity-100"
             disabled={!file || !documentType || uploading}
             onClick={handleUpload}
           >
@@ -207,11 +212,21 @@ const ProviderKycCard = ({ user, kycDocs = [], refreshKycDocs }) => {
 
             <div className="space-y-3">
               {kycDocs.map((doc) => (
+
                 <div
                   key={doc._id}
-                  className="flex items-center justify-between border rounded-md px-4 py-2"
+                  // className="flex items-center justify-between border rounded-md px-4 py-2"
+                  className="
+                    grid grid-cols-1 gap-3
+                    sm:grid-cols-2
+                    md:grid-cols-3
+                    items-center
+                    border rounded-md px-4 py-3
+                    w-full
+                  "
                 >
-                  <div>
+
+                  <div className=""> 
                     <p className="text-sm font-medium capitalize">
                       {doc.document_type.replace("_", " ")}
                     </p>
@@ -221,18 +236,24 @@ const ProviderKycCard = ({ user, kycDocs = [], refreshKycDocs }) => {
                     </p>
                   </div>
 
-                  <div className="flex items-center gap-3">
+
+                  <div
+                    // className="flex items-center gap-3"
+                    className="flex items-center gap-3 flex-wrap md:col-start-3 sm:justify-end"
+                  >
+                    {/* Status */}
                     <span
                       className={`text-xs px-2 py-1 rounded-full ${doc.status === "approved"
-                          ? "bg-green-100 text-green-700"
-                          : doc.status === "rejected"
-                            ? "bg-red-100 text-red-700"
-                            : "bg-yellow-100 text-yellow-700"
+                        ? "bg-green-100 text-green-700"
+                        : doc.status === "rejected"
+                          ? "bg-red-100 text-red-700"
+                          : "bg-yellow-100 text-yellow-700"
                         }`}
                     >
                       {doc.status}
                     </span>
 
+                    {/* View */}
                     <a
                       href={doc.file_url}
                       target="_blank"
@@ -241,10 +262,34 @@ const ProviderKycCard = ({ user, kycDocs = [], refreshKycDocs }) => {
                     >
                       View
                     </a>
+
+                    {/* Delete */}
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <button
+                          onClick={() => handleDeleteKyc(doc._id)}
+                          className="h-5 w-5 flex items-center justify-center
+                                  rounded-full
+                                  bg-red-500
+                                  hover:bg-red-600
+                                  transition"
+                            aria-label="Delete KYC document"
+                        >
+                          <CircleMinus className="h-5 w-5 text-white" />
+                        </button>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        Delete document
+                      </TooltipContent>
+                    </Tooltip>
                   </div>
+
                 </div>
+
               ))}
             </div>
+
+
           </div>
         )}
         {/* ===== Existing Uploaded Documents ===== */}

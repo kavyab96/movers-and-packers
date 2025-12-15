@@ -32,3 +32,7 @@ export const getKycDocumentsService = () => {
   return axiosInstance.get("/provider/get-kyc-documents");
 }
 
+/*delete kyc doc by provider*/
+export const deleteKycDocumentService = (docId) => {
+  return axiosInstance.put(`/provider/delete-kyc-document/${docId}`);
+};

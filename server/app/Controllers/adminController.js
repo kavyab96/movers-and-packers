@@ -329,17 +329,6 @@ export const verifyProvider = async (req, res, next) => {
         user.verification_status = status;
         user.updated_by = adminId;
 
-        await KycDocumentDb.findOneAndUpdate(
-            { user_id: userId, status: "pending" },
-            {
-                status: status,
-                updated_by: adminId
-            },
-            { new: true }
-        );
-
-
-
 
         const updatedUser = await user.save();
 
@@ -451,6 +440,66 @@ export const viewProviderKycdoc = async (req, res, next) => {
         });
     } catch (error) {
         next(error)
+    }
+}
+
+/*verify each kyc doc of provider*/
+
+export const verifyKycDoc = async (req, res, next) => {
+    try {
+
+
+        const docId = req.params.id;
+        const adminId = req.user._id;
+        const { status } = req.body;
+
+        // Validate status
+        if (!status || !["approved", "rejected", "pending"].includes(status)) {
+            return res.status(400).json({
+                success: false,
+                message: "Invalid status. Allowed values: approved, rejected, pending",
+            });
+        }
+
+        //  Find KYC document
+        const kycDoc = await KycDocumentDb.findById(docId);
+        if (!kycDoc) {
+            return res.status(404).json({
+                success: false,
+                message: "KYC document not found",
+            });
+        }
+
+        //  Ensure provider exists
+        const provider = await userDb.findById(kycDoc.user_id);
+        if (!provider || provider.role !== "provider") {
+            return res.status(404).json({
+                success: false,
+                message: "Provider not found",
+            });
+        }
+
+        //  Update KYC document
+        kycDoc.status = status;
+        kycDoc.verified_by = adminId;
+        kycDoc.verified_at = new Date();
+
+        await kycDoc.save();
+
+        return res.status(200).json({
+            success: true,
+            message: `KYC document ${status} successfully`,
+            data: {
+                _id: kycDoc._id,
+                document_type: kycDoc.document_type,
+                status: kycDoc.status,
+                verified_by: kycDoc.verified_by,
+                verified_at: kycDoc.verified_at,
+            },
+        });
+
+    } catch (error) {
+        next(error);
     }
 }
 

@@ -32,7 +32,7 @@ import {
     SelectValue,
 } from "@/components/ui/select"
 
-import VerifyKyc from "./VerifyKyc";
+import VerifyProvider from "./VerifyProvider";
 import ViewKyc from "./ViewKyc";
 
 
@@ -132,17 +132,18 @@ const UserList = () => {
     };
 
     return (
-        <div className="max-w-6xl mx-auto space-y-6">
+        <div className="max-w-6xl  space-y-6">
             {loading && <FullPageLoader />}
 
 
             <h1 className="text-2xl font-bold">users</h1>
-            <div className="flex flex-wrap gap-4 items-center justify-between">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 sm:items-center">
                 <p className="text-muted-foreground">
                     Total : {total}
                 </p>
 
-                <div className="flex gap-3">
+                {/* <div className="flex gap-3"> */}
+               <div className="flex flex-col gap-3 sm:flex-row sm:justify-end">
                     {/* Role Filter */}
                     <Select
                         value={filters.role}
@@ -151,7 +152,7 @@ const UserList = () => {
                             setCurrentPage(1);
                         }}
                     >
-                        <SelectTrigger className="w-40">
+                       <SelectTrigger className="w-full sm:w-40">
                             <SelectValue placeholder="Filter by role" />
                         </SelectTrigger>
                         <SelectContent>
@@ -170,7 +171,14 @@ const UserList = () => {
                             setFilters((prev) => ({ ...prev, search: e.target.value }));
                             setCurrentPage(1);
                         }}
-                        className="h-9 w-50 rounded-md border border-input bg-background px-3 text-sm shadow-sm focus:outline-none focus:ring-1 focus:ring-ring"
+                        className="
+                        h-9 w-full sm:w-64
+                        rounded-md border border-input
+                        bg-background px-3 text-sm
+                        shadow-sm
+                        focus:outline-none focus:ring-1 focus:ring-ring
+                        "
+                        // className="h-9 w-[50%] rounded-md border border-input bg-background px-3 text-sm shadow-sm focus:outline-none focus:ring-1 focus:ring-ring"
                     />
                 </div>
             </div>
@@ -179,8 +187,10 @@ const UserList = () => {
 
 
             <Card className="p-4">
+                <div className="overflow-x-auto">
+
                 {/* Table Header */}
-                <Table>
+                <Table className="w-full">
                     <TableHeader>
                         <TableRow>
                             <TableHead>Name</TableHead>
@@ -311,20 +321,23 @@ const UserList = () => {
                         )}
                     </TableBody>
                 </Table>
+                </div>
+                  
             </Card>
 
-
-
-            <DataTablePagination
-                currentPage={currentPage}
-                totalPages={totalPages}
-                itemsPerPage={itemsPerPage}
-                onPageChange={(page) => setCurrentPage(page)}
-                onItemsPerPageChange={(value) => {
-                    setItemsPerPage(value);
-                    setCurrentPage(1);
-                }}
-            />
+            <div className="w-full flex items-center justify-center">           
+                <DataTablePagination
+                    currentPage={currentPage}
+                    totalPages={totalPages}
+                    itemsPerPage={itemsPerPage}
+                    onPageChange={(page) => setCurrentPage(page)}
+                    onItemsPerPageChange={(value) => {
+                        setItemsPerPage(value);
+                        setCurrentPage(1);
+                    }}
+                />
+           
+             </div>
 
 
             {/* edit dialog component */}
@@ -338,7 +351,7 @@ const UserList = () => {
             )} */}
             {/* Verify KYC Dialog */}
             {selectedProvider && (
-                <VerifyKyc
+                <VerifyProvider
                     provider={selectedProvider}
                     open={verifyOpen}
                     onOpenChange={setVerifyOpen}

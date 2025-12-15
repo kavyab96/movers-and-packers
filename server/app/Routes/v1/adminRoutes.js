@@ -1,5 +1,5 @@
 const { verify } = require("jsonwebtoken");
-const { adminRegister, getAllUsers ,updateAdminProfile,updateAdminProfilePic, userDelete, verifyProvider ,adminProfile, getAllBookings,dashboardStats,viewProviderKycdoc } = require("../../Controllers/adminController");
+const { adminRegister, getAllUsers ,updateAdminProfile,updateAdminProfilePic, userDelete, verifyProvider ,adminProfile, getAllBookings,dashboardStats,viewProviderKycdoc,verifyKycDoc} = require("../../Controllers/adminController");
 const authMiddleware = require("../../Middleware/authMiddleware");
 const { adminRegisterValidationRules } = require("../../Middleware/validators/authValidator");
 const { addServiceAreaValidator, editServiceAreaValidator } = require("../../Middleware/validators/serviceAreaValidator");
@@ -40,6 +40,7 @@ adminRouter.put("/delete/:id",authMiddleware, roleMiddleware(['admin']), userDel
 adminRouter.put("/verify-provider/:id",authMiddleware, roleMiddleware(['admin']), verifyProvider);
 /*get kyc doc for admin view*/
 adminRouter.get("/provider-kyc/:id",authMiddleware, roleMiddleware(['admin']), viewProviderKycdoc);
+adminRouter.patch("/verify-kyc-doc/:id",authMiddleware, roleMiddleware(['admin']), verifyKycDoc)
 
 
 

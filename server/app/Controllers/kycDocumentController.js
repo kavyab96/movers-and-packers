@@ -9,7 +9,7 @@ export const getKycDocuments = async (req, res, next) => {
     try {
 
         const providerId = req.user._id;
-       
+
         // Fetch provider
         const provider = await User.findById(providerId).select("kyc_documents");
         if (!provider) {
@@ -17,17 +17,17 @@ export const getKycDocuments = async (req, res, next) => {
                 message: "Provider not found."
             });
         }
-      
+
         //convert providerId to string for matching
         const providerIdStr = providerId.toString();
-        
-        const filter = { is_active: true,user_id: providerIdStr};
-        const kyc_documents = await KycDocumentDb.find(filter);      
+
+        const filter = { is_active: true, user_id: providerIdStr };
+        const kyc_documents = await KycDocumentDb.find(filter);
 
         return res.status(200).json({
             message: "KYC documents fetched successfully.",
             data: kyc_documents,
-            user:providerId
+            user: providerId
         });
     } catch (error) {
         next(error);
@@ -40,8 +40,8 @@ export const uploadKycDocuments = async (req, res, next) => {
         const providerId = req.user._id;
 
         const { document_type } = req.body;
-          
-       
+
+
         // Allowed document types
         const allowedDocs = ["aadhar", "pan", "license", "voter_id", "passport", "other"];
         //validation
@@ -55,7 +55,7 @@ export const uploadKycDocuments = async (req, res, next) => {
                 message: `Invalid document_type. Allowed types are: ${allowedDocs.join(", ")}`,
             });
         }
-        
+
 
         //  File check
         if (!req.file) {
@@ -96,3 +96,46 @@ export const uploadKycDocuments = async (req, res, next) => {
     }
 }
 
+/* delete kyc doc by provider*/
+
+
+export const deleteKycDocuments = async (req, res, next) => {
+    try {
+        const providerId = req.user._id;
+        const { id } = req.params
+
+        const kycDoc = await KycDocumentDb.findById(id);
+        if (!kycDoc) {
+            return res.status(404).json({
+                message: "KYC document not found",
+            });
+        }
+
+        // Ensure document belongs to provider
+        if (kycDoc.user_id.toString() !== providerId.toString()) {
+            return res.status(403).json({
+                message: "You are not allowed to delete this document",
+            });
+        }
+
+        //  Prevent deleting approved documents (recommended)
+        // if (kycDoc.status === "approved") {
+        //     return res.status(400).json({
+        //         message: "Approved documents cannot be deleted",
+        //     });
+        // }
+
+        // Soft delete
+        kycDoc.is_active = false;
+        kycDoc.updated_by = providerId;
+        await kycDoc.save();
+
+        return res.status(201).json({
+            message: "Doccument deleted successfully",
+           
+        });
+
+    } catch (error) {
+        next(error);
+    }
+}

@@ -37,3 +37,17 @@ export const deleteAreaService = (id) => {
 }
 
 
+/* verify provider*/
+export const verifyProviderService = (id, status) => {
+  return axiosInstance.put(
+    `/admin/verify-provider/${id}`,
+    { status }
+  );
+};
+
+/* view kyc*/
+export const getProviderKycService = (providerId) => {
+  return axiosInstance.get(
+    `/admin/provider-kyc/${providerId}`
+  );
+};

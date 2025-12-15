@@ -8,6 +8,9 @@ import ServiceRequest from "../Models/serviceRequestModel.js";
 // const { capitalizeFirst } = require("../Utilities/stringHelper.js");
 import { capitalizeFirst } from "../Utilities/stringHelper.js";
 
+import KycDocumentDb from "../Models/kycDocumentModel.js";
+
+
 /* admin register function*/
 export const adminRegister = async (req, res, next) => {
     try {
@@ -326,6 +329,18 @@ export const verifyProvider = async (req, res, next) => {
         user.verification_status = status;
         user.updated_by = adminId;
 
+        await KycDocumentDb.findOneAndUpdate(
+            { user_id: userId, status: "pending" },
+            {
+                status: status,
+                updated_by: adminId
+            },
+            { new: true }
+        );
+
+
+
+
         const updatedUser = await user.save();
 
 
@@ -399,5 +414,44 @@ export const dashboardStats = async (req, res, next) => {
         next(error);
     }
 };
+
+/*view provider kyc doc by admin*/
+
+export const viewProviderKycdoc = async (req, res, next) => {
+    try {
+        // return res.status(404).json({ message: "Admin not found" });
+        const adminId = req.user.id;
+        const providerId = req.params.id;
+
+        //  Check provider exists
+        const provider = await userDb.findById(providerId);
+        if (!provider) {
+            return res.status(404).json({
+                message: "Provider not found"
+            });
+        }
+
+        //  Ensure user is provider
+        if (provider.role !== "provider") {
+            return res.status(400).json({
+                message: "KYC documents are only available for providers"
+            });
+        }
+
+        //  Fetch KYC documents
+        const kycDocs = await KycDocumentDb.find({
+            user_id: providerId,
+            is_active: true
+        })
+            .sort({ createdAt: -1 });
+
+        return res.status(200).json({
+            message: "Provider KYC documents fetched successfully",
+            data: kycDocs
+        });
+    } catch (error) {
+        next(error)
+    }
+}
 
 

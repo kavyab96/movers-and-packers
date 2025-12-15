@@ -17,6 +17,7 @@ export const getKycDocuments = async (req, res, next) => {
                 message: "Provider not found."
             });
         }
+      
         //convert providerId to string for matching
         const providerIdStr = providerId.toString();
         
@@ -39,7 +40,8 @@ export const uploadKycDocuments = async (req, res, next) => {
         const providerId = req.user._id;
 
         const { document_type } = req.body;
-        
+          
+       
         // Allowed document types
         const allowedDocs = ["aadhar", "pan", "license", "voter_id", "passport", "other"];
         //validation

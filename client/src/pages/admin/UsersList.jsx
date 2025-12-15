@@ -25,16 +25,28 @@ import { getAllUsersService } from "../../services/adminServices";
 import { formatDate } from "../../utils/format";
 
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
 } from "@/components/ui/select"
+
+import VerifyKyc from "./VerifyKyc";
+import ViewKyc from "./ViewKyc";
+
+
 
 // import EditJobDialog from "../provider/EditJobDialog"
 
 const UserList = () => {
+
+    /*kyc dialog states*/
+    const [selectedProvider, setSelectedProvider] = useState(null);
+    const [verifyOpen, setVerifyOpen] = useState(false);
+    const [viewKycOpen, setViewKycOpen] = useState(false);
+    const [verificationStatus, setVerificationStatus] = useState("pending");
+
 
     const [total, setTotal] = useState(0);
     const [currentPage, setCurrentPage] = useState(1);
@@ -47,10 +59,10 @@ const UserList = () => {
     //filters
     // const [search, setSearch] = useState("");
     // const [role, setRole] = useState("all"); 
-     const [filters, setFilters] = useState({
+    const [filters, setFilters] = useState({
         search: "",
         role: "all",// all | user | provider
-      });
+    });
 
 
     //edit dialog-------------
@@ -135,7 +147,7 @@ const UserList = () => {
                     <Select
                         value={filters.role}
                         onValueChange={(value) => {
-                            setFilters((prev)=>({...prev, role: value}));
+                            setFilters((prev) => ({ ...prev, role: value }));
                             setCurrentPage(1);
                         }}
                     >
@@ -155,7 +167,7 @@ const UserList = () => {
                         placeholder="Search users/phone/Email..."
                         value={filters.search}
                         onChange={(e) => {
-                            setFilters((prev)=>({...prev, search: e.target.value}));
+                            setFilters((prev) => ({ ...prev, search: e.target.value }));
                             setCurrentPage(1);
                         }}
                         className="h-9 w-50 rounded-md border border-input bg-background px-3 text-sm shadow-sm focus:outline-none focus:ring-1 focus:ring-ring"
@@ -177,7 +189,7 @@ const UserList = () => {
                             <TableHead>Email</TableHead>
                             <TableHead>Address</TableHead>
                             <TableHead>Joined Date</TableHead>
-                            {/* <TableHead className="text-center">Actions</TableHead> */}
+                            <TableHead className="text-center">Actions</TableHead>
                         </TableRow>
                     </TableHeader>
 
@@ -209,7 +221,8 @@ const UserList = () => {
                                     <TableCell>{user.email}</TableCell>
                                     <TableCell>{user.address}</TableCell>
                                     <TableCell>{formatDate(user.created_at)}</TableCell>
-                                    <TableCell>
+
+                                    {/*<TableCell>
                                         <Badge
                                             variant={
                                                 user.status === "completed"
@@ -222,10 +235,47 @@ const UserList = () => {
                                         >
                                             {user.status}
                                         </Badge>
-                                    </TableCell>
+                                    </TableCell> */}
 
-                                    {/* <TableCell className="text-right flex justify-end gap-2"> */}
-                                    {/* <Tooltip>
+                                    <TableCell className="text-right flex justify-end gap-2">
+                                        {user.role === "provider" && (
+                                            <Tooltip>
+                                                <TooltipTrigger asChild>
+                                                    <Button
+                                                        size="sm"
+                                                        variant="secondary"
+                                                        onClick={() => {
+                                                            setSelectedProvider(user);
+                                                            setViewKycOpen(true);
+                                                        }}
+                                                    >
+                                                        <Eye className="h-4 w-4" />
+                                                    </Button>
+                                                </TooltipTrigger>
+                                                <TooltipContent>View KYC</TooltipContent>
+                                            </Tooltip>
+                                        )}
+
+                                        {/* Verify Provider */}
+                                        {user.role === "provider" && (
+                                            <Tooltip>
+                                                <TooltipTrigger asChild>
+                                                    <Button
+                                                        size="sm"
+                                                        variant="outline"
+                                                        onClick={() => {
+                                                            setSelectedProvider(user);
+                                                            setVerifyOpen(true);
+                                                        }}
+                                                    >
+                                                        <ShieldCheck className="h-4 w-4 text-green-600" />
+                                                    </Button>
+                                                </TooltipTrigger>
+                                                <TooltipContent>Verify Provider</TooltipContent>
+                                            </Tooltip>
+                                        )}
+
+                                        {/* <Tooltip>
                                             <TooltipTrigger asChild>
                                                 <Button size="sm" variant="secondary" >
                                                     <Eye className="h-4 w-4 mr-1" />
@@ -236,7 +286,7 @@ const UserList = () => {
                                             </TooltipContent>
                                         </Tooltip> */}
 
-                                    {/* <Tooltip>
+                                        {/* <Tooltip>
                                             <TooltipTrigger asChild>
                                                 <Button size="sm"
                                                     variant="secondary"
@@ -255,7 +305,7 @@ const UserList = () => {
 
 
 
-                                    {/* </TableCell>     */}
+                                    </TableCell>
                                 </TableRow>
                             ))
                         )}
@@ -286,6 +336,26 @@ const UserList = () => {
                     onUpdate={handleJobUpdate}
                 />
             )} */}
+            {/* Verify KYC Dialog */}
+            {selectedProvider && (
+                <VerifyKyc
+                    provider={selectedProvider}
+                    open={verifyOpen}
+                    onOpenChange={setVerifyOpen}
+                    fetchUsers={fetchUsers}
+                    currentPage={currentPage}
+                    itemsPerPage={itemsPerPage}
+                />
+            )}
+
+            {/* View KYC Dialog */}
+            {selectedProvider && (
+                <ViewKyc
+                    provider={selectedProvider}
+                    open={viewKycOpen}
+                    onOpenChange={setViewKycOpen}
+                />
+            )}
 
 
         </div>

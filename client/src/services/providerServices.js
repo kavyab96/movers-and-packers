@@ -17,3 +17,18 @@ export const getPaymentsService = (query) => {
     params: query
   });
 }
+
+//upload KYC documents
+export const uploadKycService = (formData) => {
+  return axiosInstance.put(`/provider/upload-kyc-documents/`, formData,
+    {
+      headers: { "Content-Type": "multipart/form-data" }
+    },
+  )
+}
+
+/*get KYC documents */
+export const getKycDocumentsService = () => {
+  return axiosInstance.get("/provider/get-kyc-documents");
+}
+

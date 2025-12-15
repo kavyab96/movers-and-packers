@@ -40,7 +40,7 @@ providerRouter.get("/get-payments", authMiddleware, roleMiddleware(['provider'])
 providerRouter.get("/get-kyc-documents", authMiddleware, roleMiddleware(['provider']), getKycDocuments);
 
 //Upload or update KYC documents
-providerRouter.post("/upload-kyc-documents",
+providerRouter.put("/upload-kyc-documents",
     authMiddleware,
     roleMiddleware(['provider']),
     upload.single("doc"),

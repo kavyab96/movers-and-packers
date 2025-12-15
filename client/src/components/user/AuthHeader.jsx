@@ -84,7 +84,12 @@ const AuthHeader = () => {
 
           {/* Centered Logo on Mobile */}
           <NavLink
-            to="/"
+            to={
+              userData?.user
+                ? `/${userData.user.role}/dashboard`
+                : ""
+            }
+
             className="
               absolute left-1/2 -translate-x-1/2
               md:static md:translate-x-0

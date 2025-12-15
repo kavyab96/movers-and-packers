@@ -60,11 +60,11 @@ const Login = () => {
         setErrors({});
         toast.success("Login successful!");
         dispatch(saveUser(res.data.userExists))
-        const role=res.data.userExists.role;
+        const role = res.data.userExists.role;
 
         navigate(`/${role}/dashboard`)
       } catch (error) {
-        if (error.response?.status === 400) {          
+        if (error.response?.status === 400) {
           toast.error(error.response.data.error || "Login failed");
         } else {
           toast.error("Something went wrong. Please try again.");
@@ -77,11 +77,24 @@ const Login = () => {
 
 
   return (
-    <div className="flex justify-center items-center min-h-screen bg-background pt-24">
+    // <div className="flex justify-center items-center min-h-screen bg-background pt-24">
+    // <div className="flex justify-center items-center min-h-[calc(100vh-96px)] bg-background">
+    <div className="flex justify-center items-center min-h-[calc(100vh-96px)] bg-linear-to-br from-background to-muted">
+
+
       <Card className="w-full max-w-sm shadow-lg ">
-        <CardHeader>
+        {/* <CardHeader>
           <CardTitle>Login</CardTitle>
           <CardDescription>Access your account securely</CardDescription>
+        </CardHeader> */}
+
+        <CardHeader className="space-y-1">
+          <CardTitle className="text-2xl font-bold tracking-tight">
+            Welcome back 👋
+          </CardTitle>
+          <CardDescription className="text-sm">
+            Sign in to continue to <span className="font-medium">TransitBee</span>
+          </CardDescription>
         </CardHeader>
 
         <CardContent>
@@ -125,7 +138,7 @@ const Login = () => {
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="text-muted-foreground"
+                  className="text-muted-foreground hover:text-foreground transition"
                 >
                   {showPassword ? (
                     <EyeOff className="h-4 w-4" />
@@ -149,7 +162,8 @@ const Login = () => {
               </div> */}
             </div>
 
-            <Button className="w-full" >Login</Button>
+            <Button className="w-full bg-linear-to-r from-green-200 to-sky-400 opacity-70 hover:opacity-100">
+              Login</Button>
           </form>
         </CardContent>
 

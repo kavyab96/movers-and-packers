@@ -6,7 +6,7 @@ import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Separator } from "@/components/ui/separator"
 
 import { toast } from "sonner";
-import { profilePicUpdateService } from "../../services/userServices";
+import { profilePicUpdateService,adminProfilePicUpdateService } from "../../services/userServices";
 import FullPageLoader from "../../components/loaders/FullPageLoader";
 import { updateProfilePic } from "../../redux/features/userSlice"
 import ProfileInfoCard from "./ProfileInfoCard";
@@ -38,7 +38,12 @@ const Profile = () => {
       // TODO: API Upload Image
       const formData = new FormData();
       formData.append("image", file);
-      const res = await profilePicUpdateService(user._id, formData)
+      let res; // 
+     if( user.role === "admin" ){
+        res = await adminProfilePicUpdateService(user._id, formData)
+      }else{
+         res = await profilePicUpdateService(user._id, formData)
+      }
 
       const newPic = res.data.data.profile_pic;  // New profile picture returned from server
       dispatch(updateProfilePic(newPic));  // Update Redux store

@@ -1,6 +1,6 @@
 const providerRouter = require("express").Router();
 const { getPayments } = require("../../Controllers/paymentController");
-const { getProviders, getAssignedJobs, updateJobStatus } = require("../../Controllers/providerController");
+const { getProviders, getAssignedJobs, updateJobStatus,dashboardStats } = require("../../Controllers/providerController");
 const { getKycDocuments,uploadKycDocuments } = require("../../Controllers/kycDocumentController");
 const authMiddleware = require("../../Middleware/authMiddleware");
 const roleMiddleware = require("../../Middleware/roleMiddleware");
@@ -28,6 +28,9 @@ providerRouter.get("/jobs", authMiddleware, roleMiddleware(['provider']), getAss
 * update availability
 */
 providerRouter.put("/update-job/:id", authMiddleware, roleMiddleware(['provider']), updateJobStatus);
+
+providerRouter.get("/dashboard-stats",authMiddleware, roleMiddleware(['provider']),dashboardStats);
+
 
 
 //View earnings***********

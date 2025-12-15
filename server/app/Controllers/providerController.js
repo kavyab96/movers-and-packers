@@ -140,7 +140,7 @@ export const getAssignedJobs = async (req, res, next) => {
         }
         /* ------------------ PAYMENT STATUS FILTER ------------------ */
         if (job_status && job_status !== "all") {
-           filter.status = job_status;
+            filter.status = job_status;
         }
         /* ------------------ SERVICE TYPE FILTER ------------------ */
         if (service_type) {
@@ -313,5 +313,80 @@ export const updateJobStatus = async (req, res, next) => {
         next(error);
     }
 }
+
+
+/* Provider dashboard stats */
+export const dashboardStats = async (req, res, next) => {
+    try {
+        const providerId = req.user._id;
+        const baseFilter = {
+            provider_id: providerId,
+            is_active: true,
+        };
+
+        const [
+            activeJobs,
+            completedJobs,
+            distanceAgg,
+            earningsAgg
+        ] = await Promise.all([
+            // Active jobs
+            ServiceRequest.countDocuments({
+                ...baseFilter,
+                status: { $in: ["accepted", "in-progress"] },
+            }),
+            // Completed jobs
+            ServiceRequest.countDocuments({
+                ...baseFilter,
+                status: "completed",
+            }),
+
+
+            // Total distance covered
+            ServiceRequest.aggregate([
+                {
+                    $match: {
+                        ...baseFilter,
+                        status: "completed",
+                    },
+                },
+                {
+                    $group: {
+                        _id: null,
+                        totalDistance: { $sum: "$distance_km" },
+                    },
+                },
+            ]),
+
+            // Total earnings
+            ServiceRequest.aggregate([
+                {
+                    $match: {
+                        ...baseFilter,
+                        status: "completed",
+                    },
+                },
+                {
+                    $group: {
+                        _id: null,
+                        totalEarnings: { $sum: "$estimated_cost" },
+                    },
+                },
+            ]),
+        ]);
+
+        return res.status(200).json({
+            message: "Provider dashboard stats fetched successfully",
+            data: {
+                activeJobs,
+                completedJobs,
+                distanceCovered: distanceAgg[0]?.totalDistance || 0,
+                earnings: earningsAgg[0]?.totalEarnings || 0,
+            },
+        });
+    } catch (error) {
+        next(error);
+    }
+};
 
 

@@ -16,8 +16,14 @@ import ThemeToggle from "../../pages/shared/DarkMode";
 const Header = () => {
   const [open, setOpen] = useState(false)
 
-  
-  
+  const linkClass = ({ isActive }) =>
+  `px-3 py-2 rounded-md transition ${
+    isActive
+      ? "bg-amber-100 text-amber-800 font-semibold"
+      : "hover:bg-muted"
+  }`;
+
+
   return (
     <header
       className="w-full h-[12vh] border-b bg-(--header-bg) transition-colors flex justify-center items-center  ">
@@ -33,15 +39,17 @@ const Header = () => {
         <div className="hidden  sm:flex items-center gap-8 font-medium ">
           {/* Menu items */}
           <nav className="flex items-center gap-6 ">
-            <NavLink to="/"  className={
-                  ({ isActive }) => isActive
-                    ? "text-amber-800 font-semibold"
-                    : "hover:text-amber-600"
-                }>Home</NavLink>
-            <NavLink to="/about"  className={({ isActive }) => isActive? "text-amber-800 font-semibold": "hover:text-amber-600"}>About</NavLink>
+            <NavLink to="/" 
+            className={
+              ({ isActive }) => isActive
+                ? "text-amber-800 font-semibold"
+                : "hover:text-amber-600"
+            }
+            >Home</NavLink>
+            <NavLink to="/about" className={({ isActive }) => isActive ? "text-amber-800 font-semibold" : "hover:text-amber-600"}>About</NavLink>
             {/* <NavLink to="/services" className="hover:text-primary transition">Services</NavLink> */}
             {/* Join Us */}
-            <NavLink to="/login" className={({ isActive }) => isActive? "text-amber-800 font-semibold": "hover:text-amber-600"}>Join Us</NavLink>
+            <NavLink to="/login" className={({ isActive }) => isActive ? "text-amber-800 font-semibold" : "hover:text-amber-600"}>Join Us</NavLink>
           </nav>
           <ThemeToggle />
 
@@ -57,27 +65,33 @@ const Header = () => {
               </Button>
             </SheetTrigger>
 
-            <SheetContent side="left" className="p-6">
+            <SheetContent side="right" className="p-6">
               <SheetHeader>
                 <SheetTitle className="text-xl font-bold">
                   TransitBee
                 </SheetTitle>
 
-                <div className="mt-6 flex flex-col gap-4 text-lg">
-                  <NavLink to="/" className={({ isActive }) => isActive? "text-amber-800 font-semibold": "hover:text-amber-600"} onClick={() => setOpen(false)}>
+                <div className="mt-6 flex flex-col gap-4 text-sm">
+                  <NavLink to="/" className={({ isActive }) => isActive ? "text-amber-800 font-semibold" : "hover:text-amber-600"} onClick={() => setOpen(false)}>
                     Home
                   </NavLink>
-                  <NavLink to="/about"className={({ isActive }) => isActive? "text-amber-800 font-semibold": "hover:text-amber-600"}
-                   onClick={() => setOpen(false)}>
+                  <NavLink to="/about" className={({ isActive }) => isActive ? "text-amber-800 font-semibold" : "hover:text-amber-600"}
+                    onClick={() => setOpen(false)}>
                     About
                   </NavLink>
                   {/* <NavLink to="/services" className={({ isActive }) => isActive? "text-amber-800 font-semibold": "hover:text-amber-600"} onClick={() => setOpen(false)}>
                     Services
                   </NavLink> */}
-                  <NavLink to="/login" className={({ isActive }) => isActive? "text-amber-800 font-semibold": "hover:text-amber-600"} onClick={() => setOpen(false)}>
+                  <NavLink to="/login" className={({ isActive }) => isActive ? "text-amber-800 font-semibold" : "hover:text-amber-600"} onClick={() => setOpen(false)}>
                     Join Us
                   </NavLink>
-                  <ThemeToggle />
+
+                  {/* Theme Toggle  */}
+                  <div className="flex items-center justify-between pt-4 border-t">
+                    <span className="text-sm">Theme</span>
+                    <ThemeToggle />
+                  </div>
+
                 </div>
               </SheetHeader>
             </SheetContent>

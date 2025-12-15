@@ -7,6 +7,8 @@ import { zodResolver } from "@hookform/resolvers/zod";
 
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import FullPageLoader from "../../components/loaders/FullPageLoader";
+
 // import { Label } from "@/components/ui/label";
 
 import {
@@ -37,6 +39,8 @@ import AreaMultiSelect from "../../components/area/AreaMultiSelect";
 const Register = () => {
   // State to track selected role
   const [role, setRole] = useState("user");
+  const [loading, setLoading] = useState(false);
+
 
   // use global areas here
   const { areas, loadingAreas } = useAreas();
@@ -65,60 +69,105 @@ const Register = () => {
   })
 
   // Handle form submit
-  const onSubmit = (values) => {
-    const formData = new FormData();
-    // Append all normal fields
-    formData.append("role", values.role);
-    formData.append("name", values.name);
-    formData.append("email", values.email);
-    formData.append("password", values.password);
-    formData.append("confirm_password", values.confirm_password);
-    formData.append("phone", values.phone);
-    formData.append("address", values.address);
-    // Provider service areas (array)
-    if (Array.isArray(values.service_areas)) {
-      values.service_areas.forEach((area) => {
-        formData.append("service_areas[]", area);
-      });
-    }
+  // const onSubmit = (values) => {
+  //   setLoading(true);
+  //   const formData = new FormData();
+  //   // Append all normal fields
+  //   formData.append("role", values.role);
+  //   formData.append("name", values.name);
+  //   formData.append("email", values.email);
+  //   formData.append("password", values.password);
+  //   formData.append("confirm_password", values.confirm_password);
+  //   formData.append("phone", values.phone);
+  //   formData.append("address", values.address);
+  //   // Provider service areas (array)
+  //   if (Array.isArray(values.service_areas)) {
+  //     values.service_areas.forEach((area) => {
+  //       formData.append("service_areas[]", area);
+  //     });
+  //   }
 
-    // Image (optional)    
-    if (values.image) {
-      formData.append("image", values.image);
-    } else {
-      console.log("NO IMAGE FOUND");
-    }
-    // for (let pair of formData.entries()) {
-    //   console.log(pair[0], pair[1]);
-    // }
+  //   // Image (optional)    
+  //   if (values.image) {
+  //     formData.append("image", values.image);
+  //   } else {
+  //     console.log("NO IMAGE FOUND");
+  //   }
 
+  //   // regService(values).then((res) => {
+  //   regService(formData).then((res) => {
+  //     console.log(res);
+  //     if (res.status === 201) {
+  //       toast.success("Sign up successful!");
+  //       form.reset();  //  <-- Clears all fields
+  //       setRole("user"); //reset role too
+  //       setImagePreview(null)
+  //       // force reset file input visually
+  //       document.getElementById("profile-upload").value = "";
 
+  //     }
+  //   }).catch((error) => {
+  //     // console.log(error);
+  //     if (error.response?.status === 400) {
+  //       toast.error(error.response.data.error || "Sign up failed");
+  //     } else {
+  //       toast.error("Something went wrong. Please try again.");
+  //     }
 
-    // regService(values).then((res) => {
-    regService(formData).then((res) => {
-      console.log(res);
+  //   })
+
+  // };
+  const onSubmit = async (values) => {
+    setLoading(true);
+
+    try {
+      const formData = new FormData();
+
+      formData.append("role", values.role);
+      formData.append("name", values.name);
+      formData.append("email", values.email);
+      formData.append("password", values.password);
+      formData.append("confirm_password", values.confirm_password);
+      formData.append("phone", values.phone);
+      formData.append("address", values.address);
+
+      if (Array.isArray(values.service_areas)) {
+        values.service_areas.forEach((area) => {
+          formData.append("service_areas[]", area);
+        });
+      }
+
+      if (values.image) {
+        formData.append("image", values.image);
+      }
+
+      const res = await regService(formData);
+
       if (res.status === 201) {
         toast.success("Sign up successful!");
-        form.reset();  //  <-- Clears all fields
-        setRole("user"); //reset role too
-        setImagePreview(null)
-        // force reset file input visually
-        document.getElementById("profile-upload").value = "";
-        
+        form.reset();
+        setRole("user");
+        setImagePreview(null);
+
+        if (fileInputRef.current) {
+          fileInputRef.current.value = "";
+        }
       }
-    }).catch((error) => {
-      // console.log(error);
+    } catch (error) {
       if (error.response?.status === 400) {
         toast.error(error.response.data.error || "Sign up failed");
       } else {
         toast.error("Something went wrong. Please try again.");
       }
-
-    })
-    // console.log("Form Data:", values, formData);
-    // axios.post("/api/register", values)
+    } finally {
+      setLoading(false);
+    }
   };
 
+if (loading) {
+        return <FullPageLoader />;
+        
+    }
 
 
   return (
@@ -338,8 +387,12 @@ const Register = () => {
                 )}
               /> */}
 
-              <Button type="submit" className="w-full">
-                Sign up
+              <Button
+                type="submit"
+                className="w-full bg-linear-to-r from-green-200 to-sky-400 opacity-60 hover:opacity-100"
+                disabled={loading}
+              >
+                {loading ? "Signing up..." : "Sign up"}
               </Button>
             </form>
           </Form>

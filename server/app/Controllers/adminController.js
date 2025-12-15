@@ -1,11 +1,15 @@
+import uploadToCloudinary from "../Utilities/imageUpload.js";
 
-const userDb = require("../Models/userModel");
-const { hashPassword } = require("../Utilities/passwordUtilities");
-
-const ServiceRequest = require("../Models/serviceRequestModel.js");
+import userDb from "../Models/userModel.js";
+// const { hashPassword, compairePassword } = require("../Utilities/passwordUtilities");
+import { hashPassword, compairePassword } from "../Utilities/passwordUtilities.js";
+// const ServiceRequest = require("../Models/serviceRequestModel.js");
+import ServiceRequest from "../Models/serviceRequestModel.js";
+// const { capitalizeFirst } = require("../Utilities/stringHelper.js");
+import { capitalizeFirst } from "../Utilities/stringHelper.js";
 
 /* admin register function*/
-exports.adminRegister = async (req, res, next) => {
+export const adminRegister = async (req, res, next) => {
     try {
         const { name, email, password } = req.body;
         if (!email || !password || !name) {
@@ -35,7 +39,7 @@ exports.adminRegister = async (req, res, next) => {
 
 
 /* Get all users list (clients and providers) */
-exports.getAllUsers = async (req, res, next) => {
+export const getAllUsers = async (req, res, next) => {
     try {
         const { page = 1, limit = 2, search, role } = req.query;
         const pageNum = parseInt(page);
@@ -89,7 +93,7 @@ exports.getAllUsers = async (req, res, next) => {
 }
 
 /* Get all users list (clients and providers) */
-exports.getAllBookings = async (req, res, next) => {
+export const getAllBookings = async (req, res, next) => {
     try {
         const { page = 1, limit = 5 } = req.query;
         const pageNum = parseInt(page);
@@ -138,7 +142,7 @@ exports.getAllBookings = async (req, res, next) => {
 
 
 /*soft-delete user/provider by admin*/
-exports.userDelete = async (req, res, next) => {
+export const userDelete = async (req, res, next) => {
     try {
 
         const userId = req.params.id;
@@ -185,11 +189,10 @@ exports.userDelete = async (req, res, next) => {
 
 /* Update admin profile  by admin*/
 
-exports.updateAdminProfile = async (req, res, next) => {
+export const updateAdminProfile = async (req, res, next) => {
     try {
-
         const adminId = req.user.id; // token middleware sets req.user
-        const { name, email, old_password, new_password } = req.body;
+        const { name, email, phone, address, old_password, new_password } = req.body;
         const admin = await userDb.findOne({ _id: adminId, role: "admin" });
         if (!admin) {
             return res.status(404).json({ message: "Admin not found" });
@@ -209,19 +212,34 @@ exports.updateAdminProfile = async (req, res, next) => {
             admin.email = email;
         }
 
+
+        // Validate phone uniqueness (if changed)
+        if (phone && phone !== admin.phone) {
+            const phoneExists = await userDb.findOne({ phone });
+
+            if (phoneExists) {
+                return res.status(400).json({ error: "Phone number already in use" });
+            }
+        }
+
         if (old_password || new_password) {
             if (!old_password || !new_password) {
                 return res.status(400).json({
                     message: "Both old_password and new_password are required"
                 });
             }
-            const isMatch = await comparePassword(old_password, admin.password);
+            const isMatch = await compairePassword(old_password, admin.password);
             if (!isMatch) {
                 return res.status(400).json({ message: "Old password is incorrect" });
             }
             admin.password = await hashPassword(new_password);
         }
 
+        if (name) admin.name = capitalizeFirst(name.trim());
+        if (phone) admin.phone = phone.trim();
+        if (email) admin.email = email.trim();
+        if (address) admin.address = address.trim();
+        admin.updated_by = adminId;
 
         /* ---------- 4. Save Changes ---------- */
         const updatedAdmin = await admin.save();
@@ -240,10 +258,44 @@ exports.updateAdminProfile = async (req, res, next) => {
     }
 }
 
+/*updating user profile pic only*/
+export const updateAdminProfilePic = async (req, res, next) => {
+
+    try {
+        const { id } = req.params;
+
+        const user = await userDb.findById(id);
+        if (!user) {
+            return res.status(404).json({ error: "User not found" });
+        }
+
+        let cloudinaryRes = null;
+        if (req.file) {
+            cloudinaryRes = await uploadToCloudinary(req.file.path, "profile-pics");
+            user.profile_pic = cloudinaryRes;
+        }
+        user.updated_by = id;
+        await user.save();
+        const updatedUser = {
+            _id: user._id,
+            name: user.name,
+            profile_pic: user.profile_pic
+        };
+
+        return res.status(200).json({
+            message: "Profile picture updated successfully",
+            data: updatedUser
+        });
+
+
+    } catch (error) {
+        next(error);
+    }
+}
 
 /* Verify or reject provider by admin*/
 
-exports.verifyProvider = async (req, res, next) => {
+export const verifyProvider = async (req, res, next) => {
     try {
 
         const userId = req.params.id;
@@ -295,7 +347,7 @@ exports.verifyProvider = async (req, res, next) => {
 }
 
 /* Get admin profile by admin*/
-exports.adminProfile = async (req, res, next) => {
+export const adminProfile = async (req, res, next) => {
     try {
         const adminId = req.user.id; // token middleware sets req.user
         const admin = await userDb.findOne({ _id: adminId, role: "admin" }).select('-password');
@@ -310,4 +362,42 @@ exports.adminProfile = async (req, res, next) => {
         next(error)
     }
 }
+
+/* Admin dashboard stats */
+export const dashboardStats = async (req, res, next) => {
+    try {
+        const [
+            totalUsers,
+            totalProviders,
+            totalClients
+        ] = await Promise.all([
+            userDb.countDocuments({
+                role: { $in: ["user", "provider"] },
+                is_active: true
+            }),
+            userDb.countDocuments({
+                role: "provider",
+                is_active: true
+            }),
+            userDb.countDocuments({
+                role: "user",
+                is_active: true
+            })
+        ]);
+
+        return res.status(200).json({
+            message: "Dashboard stats fetched successfully",
+            data: {
+                user: {
+                    totalUsers,
+                    totalProviders,
+                    totalClients
+                }
+            }
+        });
+    } catch (error) {
+        next(error);
+    }
+};
+
 

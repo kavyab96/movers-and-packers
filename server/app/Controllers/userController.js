@@ -2,6 +2,8 @@
 import UserDb from "../Models/userModel.js";
 import uploadToCloudinary from "../Utilities/imageUpload.js";
 import { capitalizeFirst } from "../Utilities/stringHelper.js";
+import ServiceRequest from "../Models/serviceRequestModel.js";
+
 
 /* Get profile data of logged-in user (client/provider)*/
 export const getUserProfile = async (req, res, next) => {
@@ -108,3 +110,75 @@ export const updateUserProfilePic = async (req, res, next) => {
         next(error);
     }
 }
+
+/* Get dashboard stats for client(user) */
+export const dashboardStats = async (req, res, next) => {
+    try {
+        const Id = req.user._id;
+        const baseFilter = {
+            client_id: Id,
+            is_active: true,
+        };
+
+        const [
+            totalBookings,
+            awaitingBookings,
+            completedBookings,
+            ongoingBookings,
+            cancelledBookings,
+            confirmedBookings
+        ] = await Promise.all([
+            // totalBookings 
+            ServiceRequest.countDocuments({
+                ...baseFilter,
+
+            }),
+
+            // awaitingBookings
+            ServiceRequest.countDocuments({
+                ...baseFilter,
+                status: "pending",
+            }),
+
+            //completedBookings
+            ServiceRequest.countDocuments({
+                ...baseFilter,
+                status: "completed",
+            }),
+
+            //ongoingBookings
+            ServiceRequest.countDocuments({
+                ...baseFilter,
+                status:  "in-progress",
+            }),
+
+            //cancelledBookings
+            ServiceRequest.countDocuments({
+                ...baseFilter,
+                status: "cancelled",
+            }),
+
+            
+            //confirmedBookings
+            ServiceRequest.countDocuments({
+                ...baseFilter,
+                status: "accepted",
+            }),
+
+        ]);
+
+        return res.status(200).json({
+            message: "User dashboard stats fetched successfully",
+            data: {
+                totalBookings,
+                awaitingBookings,
+                completedBookings,
+                ongoingBookings,
+                cancelledBookings,
+                confirmedBookings
+            },
+        });
+    } catch (error) {
+        next(error);
+    }
+};

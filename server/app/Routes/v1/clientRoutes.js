@@ -1,6 +1,7 @@
 // ONLY for client-related actions
 const { addReview } = require("../../Controllers/reviewController");
 const { createBooking,getBookings, bookingDetails, cancelBooking ,calculateCost } = require("../../Controllers/serviceRequestController");
+const { dashboardStats } = require("../../Controllers/userController");
 const authMiddleware = require("../../Middleware/authMiddleware");
 const roleMiddleware = require("../../Middleware/roleMiddleware");
 const { reviewValidator } = require("../../Middleware/validators/reviewValidator");
@@ -30,6 +31,7 @@ clientRouter.post("/add-review/:providerId", authMiddleware,roleMiddleware(['use
 //calculate distance_in_km and estimated cost when user select pickup and dropoff locations
 clientRouter.post("/calculate-cost/",authMiddleware,roleMiddleware(['user']),calculateCost );
 
+clientRouter.get("/dashboard-stats",authMiddleware, roleMiddleware(['user']),dashboardStats);
 
 
 module.exports = clientRouter;

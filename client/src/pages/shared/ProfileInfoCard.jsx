@@ -4,7 +4,7 @@ import { User, Mail, Phone, MapPin, BadgeCheck, Edit3 } from "lucide-react";
 import { toast } from "sonner";
 import { useDispatch } from "react-redux";
 import { saveUser } from "../../redux/features/userSlice";
-import { updateProfileInfoService } from "../../services/userServices";
+import { updateProfileInfoService, adminUpdateProfileInfoService } from "../../services/userServices";
 import AreaMultiSelect from "../../components/area/AreaMultiSelect";
 import FullPageLoader from "../../components/loaders/FullPageLoader";
 
@@ -13,6 +13,7 @@ const ProfileInfoCard = ({ user, areas }) => {
 
     const [editMode, setEditMode] = useState(false);
     const [loading, setLoading] = useState(false);
+    const [errors, setErrors] = useState({});
 
     const [formData, setFormData] = useState({
         name: user?.name || "",
@@ -37,15 +38,72 @@ const ProfileInfoCard = ({ user, areas }) => {
         setEditMode(!editMode);
     };
 
+
+    const validators = {
+        name: (value) =>
+            /^[A-Za-z\s]+$/.test(value) || "Name can contain only letters and spaces",
+
+        email: (value) =>
+            /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value) || "Invalid email address",
+
+        phone: (value) =>
+            /^\d{10}$/.test(value) || "Phone must be exactly 10 digits",
+
+        address: (value) =>
+            /^[A-Za-z0-9\s-]+$/.test(value) ||
+            "Address can contain letters, numbers, spaces and '-'",
+    };
+    const validateForm = () => {
+        const newErrors = {};
+
+        // NAME
+        if (!formData.name || validators.name(formData.name) !== true) {
+            newErrors.name = validators.name(formData.name);
+        }
+
+        // EMAIL
+        if (!formData.email || validators.email(formData.email) !== true) {
+            newErrors.email = validators.email(formData.email);
+        }
+
+        // PHONE (optional but if present must be valid)
+        if (formData.phone && validators.phone(formData.phone) !== true) {
+            newErrors.phone = validators.phone(formData.phone);
+        }
+
+        // ADDRESS (optional but if present must be valid)
+        if (formData.address && validators.address(formData.address) !== true) {
+            newErrors.address = validators.address(formData.address);
+        }
+
+        setErrors(newErrors);
+
+        // return true if no errors
+        return Object.keys(newErrors).length === 0;
+    };
+
+
+
     const handleSave = async () => {
+        if (!validateForm()) {
+            toast.error("Please fix the errors before saving");
+            return;
+        }
         try {
             setLoading(true);
+            let res;
+            if (user.role === "admin") {
+                console.log(user._id, 'from profilecard');
 
-            const res = await updateProfileInfoService(user._id, formData);
+                res = await adminUpdateProfileInfoService(user._id, formData);
+            } else {
+                res = await updateProfileInfoService(user._id, formData);
+            }
 
             dispatch(saveUser(res.data.data));  // Update Redux store
             toast.success("Profile updated!");
             setEditMode(false);
+            setErrors({}); // clear errors
 
         } catch (error) {
             if (error.response?.status === 400) {
@@ -92,6 +150,7 @@ const ProfileInfoCard = ({ user, areas }) => {
                         placeholder="Enter name"
                         onChange={(v) => setFormData({ ...formData, name: v })}
                         displayValue={user?.name}
+                        error={errors.name}
                     />
 
                     {/* EMAIL */}
@@ -103,6 +162,7 @@ const ProfileInfoCard = ({ user, areas }) => {
                         placeholder="Enter email"
                         onChange={(v) => setFormData({ ...formData, email: v })}
                         displayValue={user?.email}
+                        error={errors.email}
                     />
                 </div>
 
@@ -118,6 +178,7 @@ const ProfileInfoCard = ({ user, areas }) => {
                         placeholder="Enter phone"
                         onChange={(v) => setFormData({ ...formData, phone: v })}
                         displayValue={user?.phone}
+                        error={errors.phone}
                     />
 
                     {/* ADDRESS */}
@@ -129,6 +190,8 @@ const ProfileInfoCard = ({ user, areas }) => {
                         placeholder="Enter address"
                         onChange={(v) => setFormData({ ...formData, address: v })}
                         displayValue={user?.address}
+                        error={errors.address}
+                        isTextarea
                     />
                 </div>
 
@@ -201,19 +264,38 @@ const ProfileField = ({
     value,
     onChange,
     displayValue,
-    placeholder
+    placeholder,
+    error,
+    isTextarea = false,
 }) => (
     <div className="flex items-center gap-4 w-full">
         {icon}
         <div className="w-full">
             <p className="text-sm text-muted-foreground">{label}</p>
             {editable ? (
-                <input
-                    className="border rounded-md p-2 w-full"
-                    value={value}
-                    placeholder={placeholder}
-                    onChange={(e) => onChange(e.target.value)}
-                />
+                <>
+                    {isTextarea ? (
+                        <textarea
+                            rows={3}
+                            className={`border rounded-md p-2 w-full resize-none ${error ? "border-red-500 focus:ring-red-500" : ""
+                                }`}
+                            value={value}
+                            placeholder={placeholder}
+                            onChange={(e) => onChange(e.target.value)}
+                        />
+                    ) : (
+                        <input
+                            className={`border rounded-md p-2 w-full ${error ? "border-red-500 focus:ring-red-500" : ""
+                                }`}
+                            value={value}
+                            placeholder={placeholder}
+                            onChange={(e) => onChange(e.target.value)}
+                        />
+                    )}
+                    {error && (
+                        <p className="text-xs text-red-500 mt-1">{error}</p>
+                    )}
+                </>
             ) : (
                 <p className="text-base font-medium">{displayValue}</p>
             )}

@@ -1,11 +1,12 @@
 const { verify } = require("jsonwebtoken");
-const { adminRegister, getAllUsers ,updateAdminProfile, userDelete, verifyProvider ,adminProfile, getAllBookings } = require("../../Controllers/adminController");
+const { adminRegister, getAllUsers ,updateAdminProfile,updateAdminProfilePic, userDelete, verifyProvider ,adminProfile, getAllBookings,dashboardStats } = require("../../Controllers/adminController");
 const authMiddleware = require("../../Middleware/authMiddleware");
 const { adminRegisterValidationRules } = require("../../Middleware/validators/authValidator");
 const { addServiceAreaValidator, editServiceAreaValidator } = require("../../Middleware/validators/serviceAreaValidator");
 const validate = require('../../Middleware/validators/validate');
 const roleMiddleware = require("../../Middleware/roleMiddleware");
 const { listServiceAreas, deleteServiceArea, editServiceArea, addServiceArea } = require("../../Controllers/serviceAreaController");
+const upload = require("../../Middleware/multer");
 
 /* Admin-User Management Routes*/
 const adminRouter = require("express").Router();
@@ -42,12 +43,23 @@ adminRouter.put("/verify-provider/:id",authMiddleware, roleMiddleware(['admin'])
 
 
 //-----------------------admin prifile--------------------------//
-adminRouter.get("/me",authMiddleware, roleMiddleware(['admin']), adminProfile);
+// adminRouter.get("/me",authMiddleware, roleMiddleware(['admin']), adminProfile);
 
 //edit admin profile
-adminRouter.put("/me/",authMiddleware, roleMiddleware(['admin']), updateAdminProfile);
+adminRouter.put("/me/:id",authMiddleware, roleMiddleware(['admin']), updateAdminProfile);
 
+/* admin updation procile_pic only*/
+adminRouter.put("/me/profile-pic/:id",
+    authMiddleware,
+    roleMiddleware(['admin']),
+    upload.single("image"),
+    updateAdminProfilePic
+); 
 //-----------------------admin prifile--------------------------//
+
+
+adminRouter.get("/dashboard-stats",authMiddleware, roleMiddleware(['admin']),dashboardStats);
+
 
 
 

@@ -18,10 +18,22 @@ export const profilePicUpdateService = (id , formData) => {
     },
   )
 }
+//admin profile pic update
+export const adminProfilePicUpdateService = (id , formData) => {
+  return axiosInstance.put(`/admin/me/profile-pic/${id}`, formData,
+    {
+      headers: { "Content-Type": "multipart/form-data" }
+    },
+  )
+}
 
 //update profile info
 export const updateProfileInfoService =(id,formData)=>{
    return axiosInstance.put(`/users/me/${id}`, formData)
+}
+//admin update profile info
+export const adminUpdateProfileInfoService =(id,formData)=>{
+   return axiosInstance.put(`/admin/me/${id}`, formData)
 }
 
 //client-----------------------------------------------------

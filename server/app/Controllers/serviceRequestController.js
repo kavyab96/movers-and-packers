@@ -301,6 +301,12 @@ export const calculateCost = async (req, res) => {
         const price = await PriceChart.findOne();
         if (!price) return res.status(500).json({ error: "Pricing chart missing" });
 
+
+        distance_km = Number(distance_km);
+        if (isNaN(distance_km) || distance_km < 0) {
+            distance_km = 0;
+        }
+        
         const estimated_cost =
             price.base_fare +
             distance_km * price.per_km_rate +

@@ -81,7 +81,7 @@ const PaymentPage = () => {
           </div>
 
 
-          <CardTitle className="text-xl font-bold text-center">Payment Summary</CardTitle>
+          <CardTitle className="text-xl font-bold text-center mb-10">Payment Summary</CardTitle>
         </CardHeader>
 
         <CardContent className="space-y-6 ">
@@ -97,7 +97,7 @@ const PaymentPage = () => {
             {/* Amount */}
             <div className="space-y-1">
               <p className="text-sm text-muted-foreground">Amount to Pay</p>
-              <p className="text-3xl font-semibold text-green-600">
+              <p className="text-3xl font-semibold">
                 ₹{booking.payment.amount}
               </p>
             </div>
@@ -105,8 +105,8 @@ const PaymentPage = () => {
             {/* Service Type */}
             <div className="space-y-1">
               <p className="text-sm text-muted-foreground">Service Type</p>
-              <Badge className="text-sm capitalize px-3 py-1">
-                {booking.service_type}
+              <Badge className="text-sm capitalize px-3 py-1" variant="outline" >
+                {booking.service_type ==='both'?'Moving & Packing':booking.service_type}
               </Badge>
             </div>
 
@@ -128,7 +128,7 @@ const PaymentPage = () => {
             {/* Checkout Button */}
             <Button
               onClick={handleCheckout}
-              className="w-[50%] py-5 text-lg mt-5"
+              className="w-[50%] py-5 text:sm md:text-lg mt-5 bg-linear-to-r from-sky-400 to-sky-300 hover:bg-green-300  dark:text-white "
               variant="default"
             >Proceed to Checkout
             </Button>

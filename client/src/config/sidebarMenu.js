@@ -4,6 +4,7 @@ export const sidebarMenu = {
     { label: "Book Service", icon: "Truck", path: "/user/book-service" },
     { label: "Bookings", icon: "BookCheck", path: "/user/bookings" },
     { label: "Profile", icon: "UserRound", path: "/user/profile" },
+    { label: "Chat", icon: "MessageCircleMore", path: "/user/chatlist" },
     // { label: "Settings", icon: "Settings", path: "/user/boo-service" },
   ],
 
@@ -23,6 +24,7 @@ export const sidebarMenu = {
     { label: "Jobs", icon: "ClipboardList", path: "/provider/jobs" },
     { label: "Earnings", icon: "Wallet", path: "/provider/earnings" },
     { label: "Profile", icon: "UserRound", path: "/provider/profile" },
+    { label: "Chat", icon: "MessageCircleMore", path: "/provider/chatlist" },
     // { label: "Settings", icon: "Settings", path: "/provider/settings" },
   ],
 };

@@ -39,14 +39,34 @@ const AppSidebar = () => {
               const Icon = Icons[item.icon]; // use icon dynamically
 
               return (
+                // <SidebarMenuItem key={index}>
+                //   <SidebarMenuButton asChild>
+                //     <NavLink to={item.path}>
+                //       <Icon className="h-4 w-4" />
+                //       <span>{item.label}</span>
+                //     </NavLink>
+                //   </SidebarMenuButton>
+                // </SidebarMenuItem>
                 <SidebarMenuItem key={index}>
-                  <SidebarMenuButton asChild>
-                    <NavLink to={item.path}>
-                      <Icon className="h-4 w-4" />
-                      <span>{item.label}</span>
-                    </NavLink>
-                  </SidebarMenuButton>
+                  <NavLink to={item.path} end>
+                    {({ isActive }) => (
+                      <SidebarMenuButton
+                        isActive={isActive}
+                        className={`
+                        flex items-center gap-2
+                        ${isActive
+                            ? "bg-primary/10 text-primary font-medium"
+                            : "text-muted-foreground hover:bg-muted hover:text-foreground"
+                          }
+                       `}
+                      >
+                        <Icon className="h-4 w-4" />
+                        <span>{item.label}</span>
+                      </SidebarMenuButton>
+                    )}
+                  </NavLink>
                 </SidebarMenuItem>
+
               );
             })}
           </SidebarMenu>

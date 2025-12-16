@@ -3,10 +3,15 @@ const masterSchema = require("./masterModel");
 
 const messageSchema = new mongoose.Schema(
   {
-    service_request_id: {
+    // service_request_id: {
+    //   type: mongoose.Schema.Types.ObjectId,
+    //   ref: "ServiceRequest",
+    //   required: true, // Message must belong to a job chat
+    // },
+    conversation_id: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "ServiceRequest",
-      required: true, // Message must belong to a job chat
+      ref: "Conversation",
+      required: true
     },
 
     sender_id: {
@@ -29,7 +34,7 @@ const messageSchema = new mongoose.Schema(
 
     message_type: {
       type: String,
-      enum: ["text", "system"], 
+      enum: ["text", "system"],
       default: "text",
       // system messages: "Booking Accepted", "Provider is on the way", etc.
     },

@@ -37,13 +37,13 @@ const PaymentFailed = () => {
             Retry Payment
           </Button>
 
-          <Button
+          {/* <Button
             variant="ghost"
             className="w-full"
             onClick={() => navigate("/user/bookings")}
           >
             Back to Bookings
-          </Button>
+          </Button> */}
         </CardContent>
       </Card>
     </div>

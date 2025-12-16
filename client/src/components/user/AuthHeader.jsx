@@ -6,7 +6,8 @@ import { logoutService } from "../../services/authServices";
 import { persistor } from "../../redux/store";
 import { clearUser } from "../../redux/features/userSlice";
 import MobileMenu from "./MobileMenu";
-import logo from "../../assets/images/new.png";
+// import logo from "../../assets/images/new.png";
+import { socket } from "@/socket/socket";
 
 
 import {
@@ -36,6 +37,9 @@ const AuthHeader = () => {
 
   const handleLogout = async () => {
     try {
+      // Disconnect socket
+      socket.disconnect();
+
       const res = await logoutService();
       if (res) {
         persistor.purge();
@@ -160,7 +164,7 @@ const AuthHeader = () => {
                   }
                 >
                   <User className="mr-2 h-4 w-4" />
-                  <h4> {userData.user.name}'s Profile</h4>
+                  <h4 className="capitalize"> {userData.user.name}'s Profile</h4>
                 </DropdownMenuItem>
 
                 <DropdownMenuSeparator />
@@ -181,7 +185,7 @@ const AuthHeader = () => {
 
                 <DropdownMenuItem
                   onClick={handleLogout}
-                  className="text-destructive focus:text-destructive"
+                  className="focus:text-destructive"
                 >
                   <LogOut className="mr-2 h-4 w-4" />
                   Logout

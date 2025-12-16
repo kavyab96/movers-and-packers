@@ -181,7 +181,21 @@ const Bookings = () => {
                                         <Package className="h-5 w-5 text-primary" />
                                         <div>
                                             <p className="text-sm text-muted-foreground">Service Type</p>
-                                            <p className="font-medium capitalize">{b.service_type}</p>
+                                            <p className="font-medium capitalize">
+                                                 {b.service_type==='both'? "Moving and Packing" :b.service_type}
+
+                                                </p>
+                                        </div>
+                                    </div>
+
+                                     <div className="flex items-center gap-3">
+                                        <Package className="h-5 w-5 text-primary" />
+                                        <div>
+                                            <p className="text-sm text-muted-foreground">Provider</p>
+                                            <p className="font-medium capitalize">
+                                                 {b.provider_id?.name}
+
+                                                </p>
                                         </div>
                                     </div>
 
@@ -246,9 +260,9 @@ const Bookings = () => {
 
                                 {/* Actions */}
                                 <div className="pt-2 flex gap-3">
-                                    <button className="px-3 py-2 bg-primary text-white dark:text-black text-sm rounded-md hover:bg-primary/90">
+                                    {/* <button className="px-3 py-2 bg-primary text-white dark:text-black text-sm rounded-md hover:bg-primary/90">
                                         View Details
-                                    </button>
+                                    </button> */}
 
                                     {/* Pay Now button — only if payment exists and is pending */}
                                     {b.payment && b.payment.payment_status === "pending" && (

@@ -7,6 +7,7 @@ const adminRouter = require('./adminRoutes');
 const clientRouter = require('./clientRoutes');
 const areaRouter = require('./areaRoutes');
 const paymentRouter = require('./paymentRoutes');
+const chatRouter = require('./chatRoutes');
 
 
 v1Router.use('/auth',authRouter);
@@ -16,5 +17,6 @@ v1Router.use('/provider', providerRouter);
 v1Router.use('/client', clientRouter); 
 v1Router.use('/area', areaRouter); 
 v1Router.use('/payment', paymentRouter); 
+v1Router.use('/chat', chatRouter); 
 
 module.exports = v1Router;

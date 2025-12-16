@@ -28,6 +28,8 @@ import ServiceAreasList from "../pages/admin/ServiceAreasList.jsx";
 
 import RoleRoute from "./protected/RoleRoutes.jsx";
 import Unauthorized from "../pages/shared/Unauthorized.jsx";
+import ChatList from "../pages/shared/ChatList.jsx";
+import Chat from "../pages/shared/Chat.jsx";
 
 
 
@@ -66,6 +68,8 @@ export const router = createBrowserRouter([
             { path: 'payment/:id', element: <PaymentPage /> },
             { path: "payment-success", element: <PaymentSuccess /> },
             { path: "payment-failed", element: <PaymentFailed /> },
+            { path: "chatlist", element: <ChatList /> },
+            { path: "chat", element: <Chat /> },
             //   { path: '/users', element: <User /> },
             //   { path: '/admin-dashboard', element:<AdminRoute> <AdminDashboard/> </AdminRoute> },
             // { path: "*", element: <ErrorPage /> },
@@ -107,6 +111,8 @@ export const router = createBrowserRouter([
             { path: 'jobs', element: <JobList /> },
             { path: 'profile', element: <Profile /> },
             { path: 'earnings', element: <Earnings /> },
+            { path: "chatlist", element: <ChatList /> },
+            { path: "chat", element: <Chat /> },
             //   { path: '/users', element: <User /> },
             //   { path: '/admin-dashboard', element:<AdminRoute> <AdminDashboard/> </AdminRoute> },
             { path: "*", element: <ErrorPage /> },

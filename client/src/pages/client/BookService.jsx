@@ -23,14 +23,36 @@ import {
   DialogTrigger,
   DialogContent,
 } from "@/components/ui/dialog";
+import { MessageCircle } from "lucide-react";
+
+import { startConversation } from "../../services/chatService";
+import { useNavigate } from "react-router-dom";
 
 
 const BookService = () => {
+
+  const navigate = useNavigate();
+  //-----start chat------------------------
+
+  const handleChat = async (provider) => {
+    try {
+      const res = await startConversation(provider._id);
+
+      const conversationId = res.data.conversation_id;
+
+      navigate(`/user/chat?conversationId=${conversationId}`);
+    } catch (error) {
+      toast.error("Unable to start chat");
+    }
+  };
+  //------------------------------------------
+
+
   const { areas } = useAreas();
   // const [open, setOpen] = useState(false)
 
 
-  
+
   //selected provider for dialog
   const [selectedProvider, setSelectedProvider] = useState(null);
 
@@ -101,7 +123,7 @@ const BookService = () => {
                 <TableHead>Email</TableHead>
                 <TableHead>Phone</TableHead>
                 <TableHead>Service Areas</TableHead>
-                <TableHead className="text-right">Action</TableHead>
+                <TableHead className="text-center">Action</TableHead>
               </TableRow>
             </TableHeader>
 
@@ -153,7 +175,19 @@ const BookService = () => {
 
 
 
-                  <TableCell className="text-right">
+                  <TableCell className="text-center flex gap-2">
+
+                    {/* CHAT BUTTON */}
+                    <button
+                      onClick={() => handleChat(p)}
+                      className="px-4 py-1 border border-primary text-primary rounded-md hover:bg-primary hover:text-white transition"
+                    >
+                      <p className="flex items-center justify-center gap-2">
+                        Chat
+                        <MessageCircle className="w-3 h-3 " />
+                      </p>
+                    </button>
+
                     <button
                       onClick={() => setSelectedProvider(p)}
                       className="px-3 py-1 bg-primary text-white dark:text-black rounded-md hover:bg-primary/90"
@@ -233,7 +267,7 @@ const BookService = () => {
           open={!!selectedProvider}
           onOpenChange={() => setSelectedProvider(null)}
         >
-          <DialogContent className="max-w-lg">
+          <DialogContent className="max-h-[95vh] max-w-lg  overflow-y-auto lg:overflow-hidden">
             <BookingForm
               provider={selectedProvider}
               areas={areas}

@@ -90,7 +90,7 @@ const Login = () => {
 
         <CardHeader className="space-y-1">
           <CardTitle className="text-2xl font-bold tracking-tight">
-            Welcome back 👋
+            Welcome back 
           </CardTitle>
           <CardDescription className="text-sm">
             Sign in to continue to <span className="font-medium">TransitBee</span>

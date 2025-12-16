@@ -41,7 +41,7 @@ const ChatList = () => {
 
             <h2 className="p-4 font-semibold">Chat List</h2>
 
-            {chats.length === 0 && (
+           {!loading && chats.length === 0 && (
                 <div className=" flex flex-col items-center justify-center h-full p-8 text-center text-gray-500">
 
                     {/* Illustration */}

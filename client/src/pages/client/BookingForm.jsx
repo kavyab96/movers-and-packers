@@ -336,7 +336,7 @@ const BookingForm = ({ provider, areas, onClose }) => {
 
             {/* PRICE BREAKDOWN UI */}
             {priceChart && (
-              <div className="border rounded-lg p-4 bg-gray-50 space-y-3 mt-4">
+              <div className="border rounded-lg p-4 bg-gray-50  dark:hover:bg-gray-600 space-y-3 mt-4">
 
                 <h3 className="text-lg font-semibold">Price Breakdown</h3>
 

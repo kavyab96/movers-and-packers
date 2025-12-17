@@ -41,7 +41,7 @@ export default function ServiceSearchForm({ areas, onSubmit }) {
         </div>
 
         {/* DROPOFF */}
-        <div className="flex-1 min-h-0 p-2 md:border-r hover:bg-gray-200 text-left md:text-center">
+        <div className="flex-1 min-h-0 p-2 md:border-r hover:bg-gray-200  dark:hover:bg-gray-600 text-left md:text-center">
           <label className="text-[1rem] uppercase font-semibold ms-2">To</label>
           <LocationCombobox
             value={dropoff}
@@ -52,7 +52,7 @@ export default function ServiceSearchForm({ areas, onSubmit }) {
         </div>
 
         {/* DATE */}
-        <div className="flex-1 min-h-0 p-2 md:border-r hover:bg-gray-200 text-left md:text-center">
+        <div className="flex-1 min-h-0 p-2 md:border-r hover:bg-gray-200  dark:hover:bg-gray-600 text-left md:text-center">
           <label className="text-[1rem] uppercase font-semibold ms-2">Date</label>
           <Popover>
             <PopoverTrigger asChild>

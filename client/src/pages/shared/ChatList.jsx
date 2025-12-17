@@ -17,31 +17,31 @@ const ChatList = () => {
     //     });
     // }, []);
     useEffect(() => {
-    const fetchChats = async () => {
-        try {
-            setLoading(true);
-            const res = await getMyChats();
-            setChats(res.data);
-        } catch (err) {
-            console.error("Failed to load chats", err);
-        } finally {
-            setLoading(false);
-        }
-    };
+        const fetchChats = async () => {
+            try {
+                setLoading(true);
+                const res = await getMyChats();
+                setChats(res.data);
+            } catch (err) {
+                console.error("Failed to load chats", err);
+            } finally {
+                setLoading(false);
+            }
+        };
 
-    fetchChats();
-}, []);
+        fetchChats();
+    }, []);
 
 
 
     return (
         <div className="w-full  overflow-y-auto">
-             {loading && <FullPageLoader />}
+            {loading && <FullPageLoader />}
 
 
             <h2 className="p-4 font-semibold">Chat List</h2>
 
-           {!loading && chats.length === 0 && (
+            {!loading && chats.length === 0 && (
                 <div className=" flex flex-col items-center justify-center h-full p-8 text-center text-gray-500">
 
                     {/* Illustration */}
@@ -57,9 +57,11 @@ const ChatList = () => {
                     </h3>
 
                     {/* Subtitle */}
-                    <p className="text-sm mt-2 max-w-xs">
-                        Start a chat by booking a service or messaging a provider.
-                    </p>
+                    {user.role == 'user' &&
+                        <p className="text-sm mt-2 max-w-xs">
+                            Start a chat by booking a service or messaging a provider.
+                        </p>
+                    }
                 </div>
             )}
 

@@ -15,7 +15,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Eye, Pencil, ShieldCheck, XCircle } from "lucide-react";
+import { Eye, Pencil, ShieldCheck, BadgeCheck, XCircle } from "lucide-react";
 
 import FullPageLoader from "../../components/loaders/FullPageLoader";
 import DataTablePagination from "../../components/table/DataTablePagination";
@@ -137,13 +137,13 @@ const UserList = () => {
 
 
             <h1 className="text-2xl font-bold">users</h1>
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 sm:items-center">
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 sm:items-center">
                 <p className="text-muted-foreground">
                     Total : {total}
                 </p>
 
                 {/* <div className="flex gap-3"> */}
-               <div className="flex flex-col gap-3 sm:flex-row sm:justify-end">
+                <div className="flex flex-col gap-3 sm:flex-row sm:justify-end">
                     {/* Role Filter */}
                     <Select
                         value={filters.role}
@@ -152,7 +152,7 @@ const UserList = () => {
                             setCurrentPage(1);
                         }}
                     >
-                       <SelectTrigger className="w-full sm:w-40">
+                        <SelectTrigger className="w-full sm:w-40">
                             <SelectValue placeholder="Filter by role" />
                         </SelectTrigger>
                         <SelectContent>
@@ -178,7 +178,7 @@ const UserList = () => {
                         shadow-sm
                         focus:outline-none focus:ring-1 focus:ring-ring
                         "
-                        // className="h-9 w-[50%] rounded-md border border-input bg-background px-3 text-sm shadow-sm focus:outline-none focus:ring-1 focus:ring-ring"
+                    // className="h-9 w-[50%] rounded-md border border-input bg-background px-3 text-sm shadow-sm focus:outline-none focus:ring-1 focus:ring-ring"
                     />
                 </div>
             </div>
@@ -189,50 +189,72 @@ const UserList = () => {
             <Card className="p-4">
                 <div className="overflow-x-auto">
 
-                {/* Table Header */}
-                <Table className="w-full">
-                    <TableHeader>
-                        <TableRow>
-                            <TableHead>Name</TableHead>
-                            <TableHead>Role</TableHead>
-                            <TableHead>Phone</TableHead>
-                            <TableHead>Email</TableHead>
-                            <TableHead>Address</TableHead>
-                            <TableHead>Joined Date</TableHead>
-                            <TableHead className="text-center">Actions</TableHead>
-                        </TableRow>
-                    </TableHeader>
+                    {/* Table Header */}
+                    <Table className="w-full">
+                        <TableHeader>
+                            <TableRow>
+                                <TableHead>Name</TableHead>
+                                <TableHead>Role</TableHead>
+                                <TableHead>Phone</TableHead>
+                                <TableHead>Email</TableHead>
+                                <TableHead>Address</TableHead>
+                                <TableHead>Verification Status</TableHead>
+                                <TableHead>Joined Date</TableHead>
+                                <TableHead className="text-center">Actions</TableHead>
+                            </TableRow>
+                        </TableHeader>
 
-                    <TableBody>
-                        {loading ? (
-                            [...Array(5)].map((_, i) => (
-                                <TableRow key={i}>
-                                    <TableCell><Skeleton className="h-4 w-20" /></TableCell>
-                                    <TableCell><Skeleton className="h-4 w-24" /></TableCell>
-                                    <TableCell><Skeleton className="h-4 w-24" /></TableCell>
-                                    <TableCell><Skeleton className="h-6 w-14" /></TableCell>
-                                    <TableCell className="text-right">
-                                        <Skeleton className="h-8 w-16 ml-auto" />
+                        <TableBody>
+                            {loading ? (
+                                [...Array(5)].map((_, i) => (
+                                    <TableRow key={i}>
+                                        <TableCell><Skeleton className="h-4 w-20" /></TableCell>
+                                        <TableCell><Skeleton className="h-4 w-24" /></TableCell>
+                                        <TableCell><Skeleton className="h-4 w-24" /></TableCell>
+                                        <TableCell><Skeleton className="h-6 w-14" /></TableCell>
+                                        <TableCell className="text-right">
+                                            <Skeleton className="h-8 w-16 ml-auto" />
+                                        </TableCell>
+                                    </TableRow>
+                                ))
+                            ) : users.length === 0 ? (
+                                <TableRow>
+                                    <TableCell colSpan="5" className="text-center py-6 text-muted-foreground">
+                                        No users found.
                                     </TableCell>
                                 </TableRow>
-                            ))
-                        ) : users.length === 0 ? (
-                            <TableRow>
-                                <TableCell colSpan="5" className="text-center py-6 text-muted-foreground">
-                                    No users found.
-                                </TableCell>
-                            </TableRow>
-                        ) : (
-                            users.map((user) => (
-                                <TableRow key={user._id}>
-                                    <TableCell className="font-medium">{user.name}</TableCell>
-                                    <TableCell>{user.role}</TableCell>
-                                    <TableCell>{user.phone}</TableCell>
-                                    <TableCell>{user.email}</TableCell>
-                                    <TableCell>{user.address}</TableCell>
-                                    <TableCell>{formatDate(user.created_at)}</TableCell>
+                            ) : (
+                                users.map((user) => (
+                                    <TableRow key={user._id}>
+                                        <TableCell className="font-medium">{user.name}</TableCell>
+                                        <TableCell>{user.role}</TableCell>
+                                        <TableCell>{user.phone}</TableCell>
+                                        <TableCell>{user.email}</TableCell>
+                                        <TableCell>{user.address}</TableCell>
+                                        <TableCell>
+                                            {user.role === "provider" ? (
+                                                user.verification_status === "approved" ? (
+                                                    <Badge variant="outline" className="flex items-center gap-1 w-fit">
+                                                        <BadgeCheck className="h-3.5 w-3.5 text-blue-600" />
+                                                        Approved
+                                                    </Badge>
+                                                ) : user.verification_status === "pending" ? (
+                                                    <Badge variant="secondary">Pending</Badge>
+                                                ) : (
+                                                    <Badge variant="destructive">Rejected</Badge>
+                                                )
+                                            ) : (
+                                                <span className="text-muted-foreground flex items-center gap-1">
+                                                    {/* <XCircle className="h-3.5 w-3.5" /> */}
+                                                    Not required
+                                                </span>
+                                            )}
+                                        </TableCell>
 
-                                    {/*<TableCell>
+
+                                        <TableCell>{formatDate(user.created_at)}</TableCell>
+
+                                        {/*<TableCell>
                                         <Badge
                                             variant={
                                                 user.status === "completed"
@@ -247,45 +269,45 @@ const UserList = () => {
                                         </Badge>
                                     </TableCell> */}
 
-                                    <TableCell className="text-right flex justify-end gap-2">
-                                        {user.role === "provider" && (
-                                            <Tooltip>
-                                                <TooltipTrigger asChild>
-                                                    <Button
-                                                        size="sm"
-                                                        variant="secondary"
-                                                        onClick={() => {
-                                                            setSelectedProvider(user);
-                                                            setViewKycOpen(true);
-                                                        }}
-                                                    >
-                                                        <Eye className="h-4 w-4" />
-                                                    </Button>
-                                                </TooltipTrigger>
-                                                <TooltipContent>View KYC</TooltipContent>
-                                            </Tooltip>
-                                        )}
+                                        <TableCell className="text-right flex justify-end gap-2">
+                                            {user.role === "provider" && (
+                                                <Tooltip>
+                                                    <TooltipTrigger asChild>
+                                                        <Button
+                                                            size="sm"
+                                                            variant="secondary"
+                                                            onClick={() => {
+                                                                setSelectedProvider(user);
+                                                                setViewKycOpen(true);
+                                                            }}
+                                                        >
+                                                            <Eye className="h-4 w-4" />
+                                                        </Button>
+                                                    </TooltipTrigger>
+                                                    <TooltipContent>View KYC</TooltipContent>
+                                                </Tooltip>
+                                            )}
 
-                                        {/* Verify Provider */}
-                                        {user.role === "provider" && (
-                                            <Tooltip>
-                                                <TooltipTrigger asChild>
-                                                    <Button
-                                                        size="sm"
-                                                        variant="outline"
-                                                        onClick={() => {
-                                                            setSelectedProvider(user);
-                                                            setVerifyOpen(true);
-                                                        }}
-                                                    >
-                                                        <ShieldCheck className="h-4 w-4 text-green-600" />
-                                                    </Button>
-                                                </TooltipTrigger>
-                                                <TooltipContent>Verify Provider</TooltipContent>
-                                            </Tooltip>
-                                        )}
+                                            {/* Verify Provider */}
+                                            {user.role === "provider" && (
+                                                <Tooltip>
+                                                    <TooltipTrigger asChild>
+                                                        <Button
+                                                            size="sm"
+                                                            variant="outline"
+                                                            onClick={() => {
+                                                                setSelectedProvider(user);
+                                                                setVerifyOpen(true);
+                                                            }}
+                                                        >
+                                                            <ShieldCheck className="h-4 w-4 text-green-600" />
+                                                        </Button>
+                                                    </TooltipTrigger>
+                                                    <TooltipContent>Verify Provider</TooltipContent>
+                                                </Tooltip>
+                                            )}
 
-                                        {/* <Tooltip>
+                                            {/* <Tooltip>
                                             <TooltipTrigger asChild>
                                                 <Button size="sm" variant="secondary" >
                                                     <Eye className="h-4 w-4 mr-1" />
@@ -296,7 +318,7 @@ const UserList = () => {
                                             </TooltipContent>
                                         </Tooltip> */}
 
-                                        {/* <Tooltip>
+                                            {/* <Tooltip>
                                             <TooltipTrigger asChild>
                                                 <Button size="sm"
                                                     variant="secondary"
@@ -315,17 +337,17 @@ const UserList = () => {
 
 
 
-                                    </TableCell>
-                                </TableRow>
-                            ))
-                        )}
-                    </TableBody>
-                </Table>
+                                        </TableCell>
+                                    </TableRow>
+                                ))
+                            )}
+                        </TableBody>
+                    </Table>
                 </div>
-                  
+
             </Card>
 
-            <div className="w-full flex items-center justify-center">           
+            <div className="w-full flex items-center justify-center">
                 <DataTablePagination
                     currentPage={currentPage}
                     totalPages={totalPages}
@@ -336,8 +358,8 @@ const UserList = () => {
                         setCurrentPage(1);
                     }}
                 />
-           
-             </div>
+
+            </div>
 
 
             {/* edit dialog component */}

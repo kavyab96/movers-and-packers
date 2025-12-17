@@ -26,7 +26,7 @@ const ProviderResults = () => {
 
     useEffect(() => {
         const fetchData = async () => {
-
+             setLoading(true);
             try {
                 const data = {
                     pickup,
@@ -46,7 +46,7 @@ const ProviderResults = () => {
         fetchData();
     }, [pickup, dropoff, date]);
 
-    console.log(providers);
+    // console.log(providers);
 
 
     return (

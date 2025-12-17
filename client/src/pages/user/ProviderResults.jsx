@@ -5,6 +5,8 @@ import { toast } from "sonner";
 import ProviderCard from "./ProviderCard";
 import { useNavigate } from "react-router-dom";
 import { CircleChevronLeft } from "lucide-react";
+import FullPageLoader from "../../components/loaders/FullPageLoader";
+
 import {
     Tooltip,
     TooltipContent,
@@ -51,7 +53,7 @@ const ProviderResults = () => {
 
     return (
         <div className="max-w-6xl mx-auto p-3 mt-10 space-y-4">
-
+            {loading && <FullPageLoader />}
             <div className="flex gap-3">
 
                 {/* Back Button */}

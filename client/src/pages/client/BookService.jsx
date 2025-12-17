@@ -180,7 +180,7 @@ const BookService = () => {
                     {/* CHAT BUTTON */}
                     <button
                       onClick={() => handleChat(p)}
-                      className="px-4 py-1 border border-primary text-primary rounded-md hover:bg-primary hover:text-white transition"
+                      className="px-4 py-1 border border-primary text-primary rounded-md hover:bg-primary hover:text-white  dark:hover:bg-gray-600 transition"
                     >
                       <p className="flex items-center justify-center gap-2">
                         Chat

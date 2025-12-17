@@ -21,11 +21,12 @@ const JobFilters = ({ filters, onChange, onClear }) => {
             onChange({ ...filters, createdDate: value })
           }
         >
-          <SelectTrigger className="w-44">
+          {/* <SelectTrigger className="w-44"> */}
+          <SelectTrigger className="">
             <SelectValue placeholder="Created date" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="all">All created</SelectItem>
+            <SelectItem value="all">All created date</SelectItem>
             <SelectItem value="week">This week</SelectItem>
             <SelectItem value="month">This month</SelectItem>
           </SelectContent>
@@ -38,11 +39,11 @@ const JobFilters = ({ filters, onChange, onClear }) => {
             onChange({ ...filters, requestedDate: value })
           }
         >
-          <SelectTrigger className="w-48">
+          <SelectTrigger className="w-40">
             <SelectValue placeholder="Requested date" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="all">All requested</SelectItem>
+            <SelectItem value="all">All requested date</SelectItem>
             <SelectItem value="week">This week</SelectItem>
             <SelectItem value="month">This month</SelectItem>
           </SelectContent>

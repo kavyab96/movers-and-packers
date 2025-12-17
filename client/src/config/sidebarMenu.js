@@ -2,7 +2,7 @@ export const sidebarMenu = {
   user: [
     { label: "Dashboard", icon: "Home", path: "/user/dashboard" },
     { label: "Book Service", icon: "Truck", path: "/user/book-service" },
-    { label: "Bookings", icon: "BookCheck", path: "/user/bookings" },
+    { label: "My Bookings", icon: "BookCheck", path: "/user/bookings" },
     { label: "Profile", icon: "UserRound", path: "/user/profile" },
     { label: "Chat", icon: "MessageCircleMore", path: "/user/chatlist" },
     // { label: "Settings", icon: "Settings", path: "/user/boo-service" },

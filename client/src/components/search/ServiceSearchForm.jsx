@@ -30,7 +30,7 @@ export default function ServiceSearchForm({ areas, onSubmit }) {
       <div className="w-full h-[60vh] md:h-auto max-w-5xl bg-white dark:bg-neutral-900 shadow-md rounded-2xl border flex flex-col md:flex-row overflow-hidden">
 
         {/* PICKUP */}
-        <div className="flex-1 min-h-0 p-2 md:border-r hover:bg-gray-200 text-left md:text-center ">
+        <div className="flex-1 min-h-0 p-2 md:border-r hover:bg-gray-200  dark:hover:bg-gray-600 text-left md:text-center ">
           <label className="text-[1rem] uppercase font-semibold ms-2 ">From</label>
           <LocationCombobox
             value={pickup}

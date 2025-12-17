@@ -3,7 +3,7 @@ import User from "../Models/userModel.js";
 import ServiceRequest from "../Models/serviceRequestModel.js";
 import Payment from "../Models/paymentModel.js";
 import mongoose from "mongoose";
-import { getStartDate } from "../Utilities/dateFilters.js";
+import { getDateRange } from "../Utilities/dateFilters.js";
 
 
 
@@ -125,17 +125,29 @@ export const getAssignedJobs = async (req, res, next) => {
 
         /* ------------------ CREATED DATE FILTER ------------------ */
         if (createdDate !== "all") {
-            const startDate = getStartDate(createdDate);
-            if (startDate) {
-                filter.created_at = { $gte: startDate };
+            const range = getDateRange(createdDate);
+            if (range) {
+                filter.created_at = {
+                    $gte: range.start,
+                    $lte: range.end,
+                };
             }
         }
 
         /* ------------------ REQUESTED DATE FILTER ------------------ */
+        // if (requestedDate !== "all") {
+        //     const startDate = getStartDate(requestedDate);
+        //     if (startDate) {
+        //         filter.requested_date_time = { $gte: startDate };
+        //     }
+        // }
         if (requestedDate !== "all") {
-            const startDate = getStartDate(requestedDate);
-            if (startDate) {
-                filter.requested_date_time = { $gte: startDate };
+            const range = getDateRange(requestedDate);
+            if (range) {
+                filter.requested_date_time = {
+                    $gte: range.start,
+                    $lte: range.end,
+                };
             }
         }
         /* ------------------ PAYMENT STATUS FILTER ------------------ */
@@ -166,11 +178,7 @@ export const getAssignedJobs = async (req, res, next) => {
         }
 
         // TOTAL COUNT (without skip/limit)
-        const total = await ServiceRequest.countDocuments({
-            provider_id: providerId,
-            is_active: true,
-        });
-
+        const total = await ServiceRequest.countDocuments(filter);
 
 
         return res.status(200).json({

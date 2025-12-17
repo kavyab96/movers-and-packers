@@ -191,7 +191,7 @@ const ProviderKycCard = ({ user, kycDocs = [], refreshKycDocs }) => {
 
           {/*  Upload Button */}
           <Button
-            className="w-full md:col-span-4 bg-linear-to-r from-green-200 to-sky-400 opacity-70 hover:opacity-100"
+            className="w-full md:col-span-4 bg-linear-to-r from-green-300 to-sky-400  hover:opacity-100"
             disabled={!file || !documentType || uploading}
             onClick={handleUpload}
           >
@@ -243,7 +243,7 @@ const ProviderKycCard = ({ user, kycDocs = [], refreshKycDocs }) => {
                   >
                     {/* Status */}
                     <span
-                      className={`text-xs px-2 py-1 rounded-full ${doc.status === "approved"
+                      className={`text-xs px-2 py-1 rounded-full capitalize ${doc.status === "approved"
                         ? "bg-green-100 text-green-700"
                         : doc.status === "rejected"
                           ? "bg-red-100 text-red-700"

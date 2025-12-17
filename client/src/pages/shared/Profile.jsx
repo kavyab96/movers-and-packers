@@ -140,11 +140,13 @@ const Profile = () => {
 
               <Separator className="my-2" />
               {/* Name & Email */}
-              <div className="space-y-1 text-center md:text-left w-full">
+              <div className="space-y-1 text-center md:text-left w-full flex flex-col items-start">
                 <h2 className="text-2xl font-semibold">{user?.name || "Unnamed User"}</h2>
 
-                <div className="flex r gap-2 mt-2">
-                  <BadgeCheck className="h-4 w-4 text-primary" />
+                <div className="flex  gap-2 mt-2 relative">
+                  {user.role==='admin' || (user.role==='provider' && user.verification_status==='approved') &&
+                  <BadgeCheck className="h-3 w-3 bg-blue-600 text-white rounded-full absolute top-1 left-15" />
+                  }
                   <span className="text-sm font-medium capitalize text-primary">
                     {user?.role}
                   </span>

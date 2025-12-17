@@ -33,6 +33,7 @@ const JobList = () => {
     const [currentPage, setCurrentPage] = useState(1);
     const [totalPages, setTotalPages] = useState(0);
     const [itemsPerPage, setItemsPerPage] = useState(2);
+    const [totalRecords, settotalRecords] = useState(0);
 
     const [jobs, setJobs] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -107,6 +108,7 @@ const JobList = () => {
             setJobs(result.data || []);
             setTotalPages(result.totalPages || 1);
             setCurrentPage(result.currentPage || 1);
+            settotalRecords(result.total || 0)
         } catch (error) {
             console.log("Failed to load jobs", error);
         } finally {
@@ -139,7 +141,7 @@ const JobList = () => {
 
             <h1 className="text-2xl font-bold">Jobs</h1>
             <p className="text-muted-foreground">
-                Manage and view all jobs assigned to you or created by users.
+                Total : {totalRecords}
             </p>
 
             <JobFilters

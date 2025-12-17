@@ -336,25 +336,25 @@ const BookingForm = ({ provider, areas, onClose }) => {
 
             {/* PRICE BREAKDOWN UI */}
             {priceChart && (
-              <div className="border rounded-lg p-4 bg-gray-50  dark:hover:bg-gray-600 space-y-3 mt-4">
+              <div className="border rounded-lg p-4 bg-gray-50 dark:bg-gray-700 dark:hover:bg-gray-600 space-y-3 mt-4">
 
                 <h3 className="text-lg font-semibold">Price Breakdown</h3>
 
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
 
-                  <div className="flex flex-col">
+                  <div className="flex flex-col gap-2">
                     <FormLabel>Base Fare</FormLabel>
                     <Input disabled value={`₹ ${priceChart.base_fare}`} />
                   </div>
 
-                  <div className="flex flex-col">
+                  <div className="flex flex-col gap-2">
                     <FormLabel>Per Sq Ft Rate</FormLabel>
                     <Input disabled value={`₹ ${priceChart.per_sqft_rate} / sq ft`} />
                   </div>
 
                   {/* Show per km rate only if service type !== packing */}
                   {watchServiceType !== "packing" && (
-                    <div className="flex flex-col">
+                    <div className="flex flex-col gap-2">
                       <FormLabel>Per KM Rate</FormLabel>
                       <Input disabled value={`₹ ${priceChart.per_km_rate} / km`} />
                     </div>
